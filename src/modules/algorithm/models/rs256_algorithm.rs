@@ -1,3 +1,5 @@
+pub mod rs256_public_params;
+
 use std::fmt::{Debug, Formatter};
 pub use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs1v15::{Signature, SigningKey};
@@ -5,6 +7,8 @@ use rsa::signature::{Keypair, SignatureEncoding, Signer, Verifier};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use crate::algorithm::JwAlg;
+use crate::algorithm::models::rs256_algorithm::rs256_public_params::RS256PublicParams;
+use crate::algorithm::traits::public_jwa_params::PublicJwaParams;
 
 #[derive(Clone)]
 pub struct RS256Algorithm {
@@ -16,6 +20,12 @@ impl RS256Algorithm {
         RS256Algorithm {
             inner: key,
         }
+    }
+}
+
+impl Debug for RS256Algorithm {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "RS256Algorithm {{ .. }}")
     }
 }
 
@@ -37,9 +47,12 @@ impl JwAlg for RS256Algorithm {
     }
 }
 
-impl Debug for RS256Algorithm {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "RS256Algorithm {{ .. }}")
+impl PublicJwaParams for RS256Algorithm {
+    type Params = RS256PublicParams;
+
+    fn public_params(&self) -> Self::Params {
+        todo!()
+        // self.inner.
     }
 }
 
