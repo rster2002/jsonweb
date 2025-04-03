@@ -1,6 +1,8 @@
 mod models;
 mod traits;
 
+pub use traits::jw_key_type::JwKeyType;
+
 #[cfg(all(test, feature = "rs256"))]
 mod tests {
     use pkcs1::DecodeRsaPrivateKey;

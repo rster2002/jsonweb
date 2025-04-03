@@ -3,6 +3,7 @@ use std::fmt::{Debug, Formatter};
 use p256::ecdsa::{SigningKey, Signature, signature::Signer};
 use p256::ecdsa::signature::Verifier;
 use crate::algorithm::JwAlg;
+use crate::modules::key::JwKeyType;
 
 /// ```shell
 /// openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out es256.pem
@@ -37,6 +38,12 @@ impl JwAlg for ES256Algorithm {
         let signature = Signature::try_from(signature).unwrap();
 
         Ok(verifying_key.verify(payload.as_bytes(), &signature).is_ok())
+    }
+}
+
+impl JwKeyType for ES256Algorithm {
+    fn kty() -> impl AsRef<str> {
+        "EC"
     }
 }
 

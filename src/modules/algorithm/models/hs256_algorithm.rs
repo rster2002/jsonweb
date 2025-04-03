@@ -4,6 +4,7 @@ use hmac::{Hmac, Mac};
 use hmac::digest::InvalidLength;
 use sha2::Sha256;
 use crate::algorithm::JwAlg;
+use crate::modules::key::JwKeyType;
 
 #[derive(Clone)]
 pub struct HS256Algorithm {
@@ -41,6 +42,12 @@ impl JwAlg for HS256Algorithm {
             .to_vec();
 
         Ok(signature == finalized)
+    }
+}
+
+impl JwKeyType for HS256Algorithm {
+    fn kty() -> impl AsRef<str> {
+        "oct"
     }
 }
 

@@ -9,6 +9,7 @@ use sha2::Sha256;
 use crate::algorithm::JwAlg;
 use crate::algorithm::models::rs256_algorithm::rs256_public_params::RS256PublicParams;
 use crate::algorithm::traits::public_jwa_params::PublicJwaParams;
+use crate::modules::key::JwKeyType;
 
 #[derive(Clone)]
 pub struct RS256Algorithm {
@@ -47,12 +48,9 @@ impl JwAlg for RS256Algorithm {
     }
 }
 
-impl PublicJwaParams for RS256Algorithm {
-    type Params = RS256PublicParams;
-
-    fn public_params(&self) -> Self::Params {
-        todo!()
-        // self.inner.
+impl JwKeyType for RS256Algorithm {
+    fn kty() -> impl AsRef<str> {
+        "RSA"
     }
 }
 
