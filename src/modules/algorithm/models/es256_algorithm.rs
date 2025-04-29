@@ -41,11 +41,11 @@ impl JwAlg for ES256Algorithm {
     }
 }
 
-impl JwKeyType for ES256Algorithm {
+/*impl JwKeyType<'_> for ES256Algorithm {
     fn kty() -> impl AsRef<str> {
         "EC"
     }
-}
+}*/
 
 impl Debug for ES256Algorithm {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

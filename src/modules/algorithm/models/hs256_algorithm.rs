@@ -45,11 +45,11 @@ impl JwAlg for HS256Algorithm {
     }
 }
 
-impl JwKeyType for HS256Algorithm {
-    fn kty() -> impl AsRef<str> {
-        "oct"
-    }
-}
+// impl JwKeyType for HS256Algorithm {
+//     fn kty() -> impl AsRef<str> {
+//         "oct"
+//     }
+// }
 
 impl Debug for HS256Algorithm {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
