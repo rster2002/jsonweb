@@ -5,7 +5,7 @@ use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use crate::algorithm::JwAlg;
+use crate::algorithm::{JwAlg, JwAlgSign};
 use crate::token::{JwtError, JwtHeader};
 use crate::token::models::jwt_claims::JwtClaims;
 
@@ -21,7 +21,7 @@ impl<T> Jwt<T>
 where T : Serialize + for<'a> Deserialize<'a>,
 {
     /// Takes the JWT instance, signs it, and returns the string representation for the token.
-    pub fn into_token<A: JwAlg>(self, algorithm: &A) -> Result<String, JwtError> {
+    pub fn into_token<A: JwAlgSign>(self, algorithm: &A) -> Result<String, JwtError> {
         let alg_ref = A::alg();
 
         let header = JwtHeader {

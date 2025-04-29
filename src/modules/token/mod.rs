@@ -8,12 +8,12 @@ pub use error::JwtError;
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::{HS256Algorithm, JwAlg};
+    use crate::algorithm::{HS256Private, JwAlg};
     use crate::token::Jwt;
 
     #[test]
     fn simple_jwt_token_can_be_generated() {
-        let algorithm = HS256Algorithm::new("something".as_bytes())
+        let algorithm = HS256Private::new("something".as_bytes())
             .unwrap();
 
         let token = Jwt::new("hello world".to_string())
@@ -26,14 +26,14 @@ mod tests {
 
     #[test]
     fn incorrect_signature_key() {
-        let algorithm_1 = HS256Algorithm::new("something".as_bytes())
+        let algorithm_1 = HS256Private::new("something".as_bytes())
             .unwrap();
 
         let token = Jwt::new("hello world".to_string())
             .into_token(&algorithm_1)
             .unwrap();
 
-        let algorithm_2 = HS256Algorithm::new("else".as_bytes())
+        let algorithm_2 = HS256Private::new("else".as_bytes())
             .unwrap();
 
         let jwt = Jwt::<String>::check(&token, &algorithm_2);

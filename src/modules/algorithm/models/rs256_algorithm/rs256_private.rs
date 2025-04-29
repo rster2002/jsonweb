@@ -1,5 +1,3 @@
-pub mod rs256_public_params;
-
 use std::fmt::{Debug, Formatter};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
@@ -10,40 +8,35 @@ use rsa::signature::{Keypair, SignatureEncoding, Signer, Verifier};
 use rsa::traits::PublicKeyParts;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
-use crate::algorithm::JwAlg;
-use crate::algorithm::models::rs256_algorithm::rs256_public_params::RS256PublicParams;
+use crate::algorithm::{JwAlg, JwAlgSign};
 use crate::modules::key::{JwKeyType, RsaPublicJwk};
 
 #[derive(Clone)]
-pub struct RS256Algorithm {
+pub struct RS256Private {
     inner: RsaPrivateKey,
     signing_key: SigningKey<Sha256>,
 }
 
-impl RS256Algorithm {
+impl RS256Private {
     pub fn new(key: RsaPrivateKey) -> Self {
-        RS256Algorithm {
+        RS256Private {
             signing_key: SigningKey::new(key.clone()),
             inner: key,
         }
     }
 }
 
-impl Debug for RS256Algorithm {
+impl Debug for RS256Private {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "RS256Algorithm {{ .. }}")
     }
 }
 
-impl JwAlg for RS256Algorithm {
+impl JwAlg for RS256Private {
     type Error = rsa::signature::Error;
 
     fn alg() -> impl AsRef<str> {
         "RS256"
-    }
-
-    fn sign(&self, payload: &str) -> Vec<u8> {
-        self.signing_key.sign(payload.as_bytes()).to_vec()
     }
 
     fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
@@ -53,24 +46,30 @@ impl JwAlg for RS256Algorithm {
     }
 }
 
-impl JwKeyType<'_> for RS256Algorithm {
-    type Public = RsaPublicJwk;
-    type Private = ();
-
-    fn kty() -> impl AsRef<str> {
-        "RSA"
-    }
-
-    fn public_params(&self) -> Self::Public {
-        let n = BASE64_URL_SAFE_NO_PAD.encode(self.inner.n().to_bytes_le());
-        let e = BASE64_URL_SAFE_NO_PAD.encode(self.inner.e().to_bytes_le());
-
-        RsaPublicJwk {
-            n,
-            e,
-        }
+impl JwAlgSign for RS256Private {
+    fn sign(&self, payload: &str) -> Vec<u8> {
+        self.signing_key.sign(payload.as_bytes()).to_vec()
     }
 }
+
+// impl JwKeyType<'_> for RS256Algorithm {
+//     type Public = RsaPublicJwk;
+//     type Private = ();
+//
+//     fn kty() -> impl AsRef<str> {
+//         "RSA"
+//     }
+//
+//     fn public_params(&self) -> Self::Public {
+//         let n = BASE64_URL_SAFE_NO_PAD.encode(self.inner.n().to_bytes_le());
+//         let e = BASE64_URL_SAFE_NO_PAD.encode(self.inner.e().to_bytes_le());
+//
+//         RsaPublicJwk {
+//             n,
+//             e,
+//         }
+//     }
+// }
 
 #[cfg(test)]
 mod tests {
@@ -79,14 +78,14 @@ mod tests {
     use pkcs1::DecodeRsaPrivateKey;
     use rsa::pkcs1v15::SigningKey;
     pub use rsa::RsaPrivateKey;
-    use crate::algorithm::{JwAlg, RS256Algorithm};
+    use crate::algorithm::{JwAlg, JwAlgSign, RS256Private};
 
     #[test]
     fn rs256_algorithm_works_as_expected() {
         let payload = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJoaiI6dHJ1ZX0";
 
-        let private_key = RsaPrivateKey::from_pkcs1_pem(include_str!("../../../../test-files/rs256.key")).unwrap();
-        let alg = RS256Algorithm::new(private_key);
+        let private_key = RsaPrivateKey::from_pkcs1_pem(include_str!("../../../../../test-files/rs256.key")).unwrap();
+        let alg = RS256Private::new(private_key);
 
         let signature_bytes = alg.sign(payload);
         let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature_bytes);

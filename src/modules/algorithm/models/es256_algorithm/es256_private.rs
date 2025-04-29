@@ -2,35 +2,30 @@ use std::convert::Infallible;
 use std::fmt::{Debug, Formatter};
 use p256::ecdsa::{SigningKey, Signature, signature::Signer};
 use p256::ecdsa::signature::Verifier;
-use crate::algorithm::JwAlg;
+use crate::algorithm::{JwAlg, JwAlgSign};
 use crate::modules::key::JwKeyType;
 
 /// ```shell
 /// openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out es256.pem
 /// ```
 #[derive(Clone)]
-pub struct ES256Algorithm {
+pub struct ES256Private {
     inner: SigningKey,
 }
 
-impl ES256Algorithm {
+impl ES256Private {
     pub fn new(key: SigningKey) -> Self {
-        ES256Algorithm {
+        ES256Private {
             inner: key,
         }
     }
 }
 
-impl JwAlg for ES256Algorithm {
+impl JwAlg for ES256Private {
     type Error = Infallible;
 
     fn alg() -> impl AsRef<str> {
         "ES256"
-    }
-
-    fn sign(&self, payload: &str) -> Vec<u8> {
-        let signature: Signature = self.inner.sign(payload.as_bytes());
-        signature.to_vec()
     }
 
     fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
@@ -41,13 +36,14 @@ impl JwAlg for ES256Algorithm {
     }
 }
 
-/*impl JwKeyType<'_> for ES256Algorithm {
-    fn kty() -> impl AsRef<str> {
-        "EC"
+impl JwAlgSign for ES256Private {
+    fn sign(&self, payload: &str) -> Vec<u8> {
+        let signature: Signature = self.inner.sign(payload.as_bytes());
+        signature.to_vec()
     }
-}*/
+}
 
-impl Debug for ES256Algorithm {
+impl Debug for ES256Private {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "ES256Algorithm {{ .. }}")
     }
@@ -59,16 +55,15 @@ mod tests {
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use p256::ecdsa::SigningKey;
     use p256::SecretKey;
-    use crate::algorithm::JwAlg;
-    use crate::algorithm::models::es256_algorithm::ES256Algorithm;
+    use crate::algorithm::{ES256Private, JwAlg, JwAlgSign};
 
     #[test]
     fn es256_algorithm_works_as_expected() {
         let payload = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0";
-        let secret_key = include_str!("../../../../test-files/es256.key").parse::<SecretKey>().unwrap();
+        let secret_key = include_str!("../../../../../test-files/es256.key").parse::<SecretKey>().unwrap();
         let signing_key = SigningKey::from(secret_key);
 
-        let alg = ES256Algorithm::new(signing_key);
+        let alg = ES256Private::new(signing_key);
 
         let signature_bytes = alg.sign(payload);
         let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature_bytes);
