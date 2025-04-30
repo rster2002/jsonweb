@@ -28,6 +28,7 @@ where T : Serialize + for<'a> Deserialize<'a>,
             alg: Cow::Borrowed(alg_ref.as_ref()),
             typ: Cow::Borrowed("JWT"),
             cty: None,
+            kid: None,
         };
 
         let header_bytes = serde_json::to_vec(&header)?;

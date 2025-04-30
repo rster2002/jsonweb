@@ -17,4 +17,7 @@ pub struct JwtHeader<'a> {
     /// between access tokens and refresh tokens.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cty: Option<Cow<'a, str>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kid: Option<Cow<'a, str>>,
 }
