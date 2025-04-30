@@ -2,7 +2,10 @@ use std::convert::Infallible;
 use std::fmt::{Debug, Formatter};
 use p256::ecdsa::{SigningKey, Signature, signature::Signer};
 use p256::ecdsa::signature::Verifier;
+use p256::elliptic_curve::SecretKey;
+use p256::NistP256;
 use crate::algorithm::{JwAlg, JwAlgSign};
+use crate::algorithm::models::es256_algorithm::es256_private_params::ES256PrivateParams;
 use crate::modules::key::JwKeyType;
 
 /// ```shell
@@ -10,13 +13,15 @@ use crate::modules::key::JwKeyType;
 /// ```
 #[derive(Clone)]
 pub struct ES256Private {
-    inner: SigningKey,
+    inner: SecretKey<NistP256>,
+    signing_key: SigningKey,
 }
 
-impl ES256Private {
-    pub fn new(key: SigningKey) -> Self {
+impl From<SecretKey<NistP256>> for ES256Private {
+    fn from(value: SecretKey<NistP256>) -> Self {
         ES256Private {
-            inner: key,
+            signing_key: SigningKey::from(value.clone()),
+            inner: value,
         }
     }
 }
@@ -29,7 +34,7 @@ impl JwAlg for ES256Private {
     }
 
     fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
-        let verifying_key = self.inner.verifying_key();
+        let verifying_key = self.signing_key.verifying_key();
         let signature = Signature::try_from(signature).unwrap();
 
         Ok(verifying_key.verify(payload.as_bytes(), &signature).is_ok())
@@ -38,8 +43,51 @@ impl JwAlg for ES256Private {
 
 impl JwAlgSign for ES256Private {
     fn sign(&self, payload: &str) -> Vec<u8> {
-        let signature: Signature = self.inner.sign(payload.as_bytes());
+        let signature: Signature = self.signing_key.sign(payload.as_bytes());
         signature.to_vec()
+    }
+}
+
+impl JwKeyType<'_> for ES256Private {
+    type Params = ES256PrivateParams;
+
+    fn kty() -> impl AsRef<str> {
+        "EC"
+    }
+
+    fn parms(&self) -> Self::Params {
+        let base_value = serde_json::to_value(self.inner.clone().to_jwk())
+            .expect("should always work");
+
+        let key = base_value
+            .as_object()
+            .expect("should always be an object");
+
+        ES256PrivateParams {
+            crv: key.get("crv")
+                .expect("should always have a value")
+                .as_str()
+                .expect("should always be a string")
+                .to_string(),
+
+            x: key.get("x")
+                .expect("should always have a value")
+                .as_str()
+                .expect("should always be a string")
+                .to_string(),
+
+            y: key.get("y")
+                .expect("should always have a value")
+                .as_str()
+                .expect("should always be a string")
+                .to_string(),
+
+            d: key.get("d")
+                .expect("should always have a value")
+                .as_str()
+                .expect("should always be a string")
+                .to_string(),
+        }
     }
 }
 
@@ -61,9 +109,8 @@ mod tests {
     fn es256_algorithm_works_as_expected() {
         let payload = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0";
         let secret_key = include_str!("../../../../../test-files/es256.key").parse::<SecretKey>().unwrap();
-        let signing_key = SigningKey::from(secret_key);
 
-        let alg = ES256Private::new(signing_key);
+        let alg = ES256Private::from(secret_key);
 
         let signature_bytes = alg.sign(payload);
         let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature_bytes);
@@ -73,5 +120,10 @@ mod tests {
         let verify = alg.verify(payload, &signature_bytes).unwrap();
 
         assert!(verify);
+    }
+    
+    #[test]
+    fn jwk_is_generated_correctly() {
+        
     }
 }
