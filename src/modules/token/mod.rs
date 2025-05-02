@@ -40,4 +40,15 @@ mod tests {
 
         assert!(jwt.is_err());
     }
+    
+    #[test]
+    fn token_with_unit_payload_is_created_correctly() {
+        let algorithm = HS256Algorithm::new("something".as_bytes())
+            .unwrap();
+        
+        let token = Jwt::new_claims()
+            .expire_in_seconds(20)
+            .into_token(&algorithm)
+            .unwrap();
+    }
 }

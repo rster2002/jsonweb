@@ -63,7 +63,7 @@ where T : Serialize + for<'a> Deserialize<'a>,
     /// Decodes and verifies the given string token with the given algorithm. Returns a JWT token
     /// instance with the expected payload. Note that this does not check any claims. To verify
     /// basic expiry claims you can use [Jwt::verify_now] or you can further verify the token using
-    /// [Jwt::against] or [Jwt::guard].
+    /// [Jwt::with_guard] or [Jwt::guard].
     pub fn check<A: JwAlg>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
     where <A as JwAlg>::Error: 'static
     {
@@ -103,24 +103,24 @@ where T : Serialize + for<'a> Deserialize<'a>,
     }
 
     /// Largely the same as [Jwt::check], but also verifies basic expiry claims. You can further
-    /// verify the token using [Jwt::against] or [Jwt::guard].
+    /// verify the token using [Jwt::with_guard] or [Jwt::guard].
     pub fn verify_now<A: JwAlg>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
     where <A as JwAlg>::Error: 'static
     {
         let jwt = Jwt::<T>::check(token, algorithm)?
-            .against(&JwtClaims::now())?;
+            .with_guard(&JwtClaims::now())?;
 
         Ok(jwt)
     }
 
     /// Verifies the token against the given claims and returns `Self`. To verify claims on a
-    /// reference use [Jwt::guard].
-    pub fn against(self, other: &JwtClaims) -> Result<Self, JwtError> {
+    /// reference, use [Jwt::guard].
+    pub fn with_guard(self, other: &JwtClaims) -> Result<Self, JwtError> {
         self.claims.verify(other)?;
         Ok(self)
     }
 
-    /// Verifies the token against the given claims. To verify claims 'in-line' use [Jwt::against].
+    /// Verifies the token against the given claims. To verify claims 'in-line' use [Jwt::with_guard].
     pub fn guard(&self, other: &JwtClaims) -> Result<(), JwtError> {
         self.claims.verify(other)
     }
@@ -191,6 +191,7 @@ where T : Serialize + for<'a> Deserialize<'a>,
         self
     }
 
+    /// Merges the given claims with the current claims.
     pub fn with_merge(mut self, other: &JwtClaims) -> Self {
         self.claims = self.claims.with_merge(other);
         self
@@ -224,10 +225,18 @@ where T : Serialize + for<'a> Deserialize<'a> + Debug,
 impl<T> Jwt<T>
 where T : Serialize + for<'a> Deserialize<'a>
 {
+    /// Creates a new Jwt instance with the given payload.
     pub fn new(payload: T) -> Self {
         Jwt {
             payload,
             claims: JwtClaims::default(),
         }
+    }
+}
+
+impl Jwt<Value> {
+    /// Creates a new Jwt instance with an empty object to be used for claims.
+    pub fn new_claims() -> Jwt<Value> {
+        Jwt::new(json! ({}))
     }
 }
