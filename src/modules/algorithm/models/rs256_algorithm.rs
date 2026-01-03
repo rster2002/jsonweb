@@ -1,4 +1,5 @@
 use std::fmt::{Debug, Formatter};
+use rand::RngCore;
 pub use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs1v15::{Signature, SigningKey};
 use rsa::signature::{Keypair, SignatureEncoding, Signer, Verifier};
@@ -16,6 +17,17 @@ impl RS256Algorithm {
         RS256Algorithm {
             inner: key,
         }
+    }
+
+    pub fn rand() -> Self {
+        let mut rng = rand::rng();
+        let mut slice = [0u8; 32];
+        rng.fill_bytes(&mut slice);
+
+        let i = SigningKey::random(&mut rng, 1)
+            .unwrap();
+
+        todo!()
     }
 }
 

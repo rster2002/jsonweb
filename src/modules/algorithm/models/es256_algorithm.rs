@@ -2,6 +2,7 @@ use std::convert::Infallible;
 use std::fmt::{Debug, Formatter};
 use p256::ecdsa::{SigningKey, Signature, signature::Signer};
 use p256::ecdsa::signature::Verifier;
+use rand::RngCore;
 use crate::algorithm::JwAlg;
 
 /// ```shell
@@ -17,6 +18,18 @@ impl ES256Algorithm {
         ES256Algorithm {
             inner: key,
         }
+    }
+
+    #[cfg(feature = "rand")]
+    pub fn rand() -> Self {
+        let mut rng = rand::rng();
+        let mut slice = [0u8; 32];
+        rng.fill_bytes(&mut slice);
+
+        let key = SigningKey::from_slice(&slice)
+            .expect("invalid key");
+
+        ES256Algorithm::new(key)
     }
 }
 
@@ -71,5 +84,10 @@ mod tests {
         let verify = alg.verify(payload, &signature_bytes).unwrap();
 
         assert!(verify);
+    }
+
+    #[test]
+    fn es256_can_be_generated_randomly() {
+        ES256Algorithm::rand();
     }
 }
