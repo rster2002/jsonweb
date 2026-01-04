@@ -1,7 +1,9 @@
 use std::fmt::{Debug, Formatter};
+use pkcs1::EncodeRsaPrivateKey;
 use rand::RngCore;
 pub use rsa::pkcs1::DecodeRsaPrivateKey;
 use rsa::pkcs1v15::{Signature, SigningKey};
+use rsa::RsaPrivateKey;
 use rsa::signature::{Keypair, SignatureEncoding, Signer, Verifier};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
@@ -19,15 +21,25 @@ impl RS256Algorithm {
         }
     }
 
-    pub fn rand() -> Self {
-        let mut rng = rand::rng();
-        let mut slice = [0u8; 32];
-        rng.fill_bytes(&mut slice);
+    #[cfg(feature = "rand")]
+    pub fn rand() -> Result<Self, rsa::Error> {
+        Self::rand_size(4096)
+    }
 
-        let i = SigningKey::random(&mut rng, 1)
-            .unwrap();
+    #[cfg(feature = "rand")]
+    pub fn rand_size(size: usize) -> Result<Self, rsa::Error> {
+        let mut rng = rand::thread_rng();
+        Ok(RS256Algorithm::new(SigningKey::random(&mut rng, size)?))
+    }
 
-        todo!()
+    pub fn to_pkcs1_der_bytes(&self) -> Result<Vec<u8>, rsa::Error> {
+        Ok(self.inner.to_pkcs1_der()?
+            .to_bytes()
+            .to_vec())
+    }
+
+    pub fn from_pkcs1_der_bytes(bytes: &[u8]) -> Result<Self, rsa::Error> {
+        Ok(RS256Algorithm::new(SigningKey::from_pkcs1_der(bytes)?))
     }
 }
 
