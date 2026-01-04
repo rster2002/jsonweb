@@ -1,13 +1,14 @@
 use std::convert::Infallible;
-use std::fmt::{Debug, Formatter};
-use p256::ecdsa::{SigningKey, Signature, signature::Signer};
+use p256::ecdsa::{SigningKey, Signature, signature::Signer, Error};
 use p256::ecdsa::signature::Verifier;
+use p256::elliptic_curve::FieldBytes;
+use p256::NistP256;
 use crate::algorithm::JwAlg;
 
 /// ```shell
 /// openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-256 -out es256.pem
 /// ```
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ES256Algorithm {
     inner: SigningKey,
 }
@@ -17,6 +18,21 @@ impl ES256Algorithm {
         ES256Algorithm {
             inner: key,
         }
+    }
+
+    #[cfg(feature = "rand")]
+    pub fn rand() -> Self {
+        let mut rng = rand::thread_rng();
+        ES256Algorithm::new(SigningKey::random(&mut rng))
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.inner.to_bytes().to_vec()
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, Error> {
+        let field_bytes = FieldBytes::<NistP256>::from_slice(bytes);
+        Ok(ES256Algorithm::new(SigningKey::from_bytes(field_bytes)?))
     }
 }
 
@@ -37,12 +53,6 @@ impl JwAlg for ES256Algorithm {
         let signature = Signature::try_from(signature).unwrap();
 
         Ok(verifying_key.verify(payload.as_bytes(), &signature).is_ok())
-    }
-}
-
-impl Debug for ES256Algorithm {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "ES256Algorithm {{ .. }}")
     }
 }
 
@@ -71,5 +81,19 @@ mod tests {
         let verify = alg.verify(payload, &signature_bytes).unwrap();
 
         assert!(verify);
+    }
+
+    #[test]
+    fn es256_can_be_generated_randomly() {
+        ES256Algorithm::rand();
+    }
+
+    #[test]
+    fn es256_to_and_from_bytes() {
+        let alg = ES256Algorithm::rand();
+        let bytes = alg.to_bytes();
+
+        let alg2 = ES256Algorithm::from_bytes(&bytes).unwrap();
+        assert_eq!(alg, alg2);
     }
 }

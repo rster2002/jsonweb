@@ -1,11 +1,11 @@
 use std::convert::Infallible;
-use std::fmt::{Debug, Formatter};
 use hmac::{Hmac, Mac};
 use hmac::digest::InvalidLength;
+use rand::RngCore;
 use sha2::Sha256;
 use crate::algorithm::JwAlg;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct HS256Algorithm {
     inner: Hmac<Sha256>,
 }
@@ -15,6 +15,15 @@ impl HS256Algorithm {
         Ok(HS256Algorithm {
             inner: Hmac::<Sha256>::new_from_slice(key)?
         })
+    }
+
+    #[cfg(feature = "rand")]
+    pub fn rand() -> Result<Self, InvalidLength> {
+        let mut rng = rand::thread_rng();
+        let mut slice = [0u8; 32];
+        rng.fill_bytes(&mut slice);
+
+        HS256Algorithm::new(&slice)
     }
 }
 
@@ -44,12 +53,6 @@ impl JwAlg for HS256Algorithm {
     }
 }
 
-impl Debug for HS256Algorithm {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "HS256Algorithm {{ .. }}")
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use base64::Engine;
@@ -69,5 +72,10 @@ mod tests {
         let verify = alg.verify(payload, &signature_bytes).unwrap();
 
         assert!(verify);
+    }
+
+    #[test]
+    fn hs256_can_be_generated_randomly() {
+        HS256Algorithm::rand();
     }
 }
