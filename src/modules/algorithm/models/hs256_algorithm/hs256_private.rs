@@ -3,7 +3,7 @@ use std::fmt::{Debug, Formatter};
 use hmac::{Hmac, Mac};
 use hmac::digest::InvalidLength;
 use sha2::Sha256;
-use crate::algorithm::{JwAlg, JwAlgSign};
+use crate::algorithm::{JwAlgVerify, JwAlgSign};
 use crate::modules::key::JwKeyType;
 
 #[derive(Clone)]
@@ -19,7 +19,7 @@ impl HS256Private {
     }
 }
 
-impl JwAlg for HS256Private {
+impl JwAlgVerify for HS256Private {
     type Error = Infallible;
 
     fn alg() -> impl AsRef<str> {
@@ -58,7 +58,7 @@ mod tests {
     use base64::Engine;
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use crate::algorithm::JwAlgSign;
-    use crate::modules::algorithm::{HS256Private, JwAlg};
+    use crate::modules::algorithm::{HS256Private, JwAlgVerify};
 
     #[test]
     fn hs256_algorithm_works_as_expected() {

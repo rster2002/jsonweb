@@ -8,7 +8,7 @@ use rsa::signature::{Keypair, SignatureEncoding, Signer, Verifier};
 use rsa::traits::PublicKeyParts;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
-use crate::algorithm::{JwAlg, JwAlgSign};
+use crate::algorithm::{JwAlgVerify, JwAlgSign};
 use crate::modules::key::{JwKeyType, RsaPublicJwk};
 
 #[derive(Clone)]
@@ -32,7 +32,7 @@ impl Debug for RS256Private {
     }
 }
 
-impl JwAlg for RS256Private {
+impl JwAlgVerify for RS256Private {
     type Error = rsa::signature::Error;
 
     fn alg() -> impl AsRef<str> {
@@ -78,7 +78,7 @@ mod tests {
     use pkcs1::DecodeRsaPrivateKey;
     use rsa::pkcs1v15::SigningKey;
     pub use rsa::RsaPrivateKey;
-    use crate::algorithm::{JwAlg, JwAlgSign, RS256Private};
+    use crate::algorithm::{JwAlgVerify, JwAlgSign, RS256Private};
 
     #[test]
     fn rs256_algorithm_works_as_expected() {

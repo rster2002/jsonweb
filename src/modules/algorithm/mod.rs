@@ -14,5 +14,5 @@ pub use models::rs256_algorithm::rs256_private::RS256Private;
 pub use models::es256_algorithm::es256_public::ES256Public;
 pub use models::es256_algorithm::es256_private::ES256Private;
 
-pub use traits::jw_alg::JwAlg;
+pub use traits::jw_alg_verify::JwAlgVerify;
 pub use traits::jw_alg_sign::JwAlgSign;

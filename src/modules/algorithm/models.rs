@@ -8,3 +8,4 @@ pub mod rs256_algorithm;
 
 #[cfg(feature = "es256")]
 pub mod es256_algorithm;
+pub mod es_algorithm;

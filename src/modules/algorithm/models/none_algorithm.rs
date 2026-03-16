@@ -1,10 +1,10 @@
 use std::convert::Infallible;
-use crate::algorithm::{JwAlg, JwAlgSign};
+use crate::algorithm::{JwAlgVerify, JwAlgSign};
 
 #[derive(Clone, Debug)]
 pub struct NoneAlgorithm;
 
-impl JwAlg for NoneAlgorithm {
+impl JwAlgVerify for NoneAlgorithm {
     type Error = Infallible;
 
     fn alg() -> impl AsRef<str> {

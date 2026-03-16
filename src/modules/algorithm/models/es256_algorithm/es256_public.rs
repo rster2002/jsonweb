@@ -1,13 +1,13 @@
 use std::convert::Infallible;
 use p256::ecdsa::{VerifyingKey, Signature, signature::Verifier};
-use crate::algorithm::JwAlg;
+use crate::algorithm::JwAlgVerify;
 
 #[derive(Clone)]
 pub struct ES256Public {
     inner: VerifyingKey,
 }
 
-impl JwAlg for ES256Public {
+impl JwAlgVerify for ES256Public {
     type Error = Infallible;
 
     fn alg() -> impl AsRef<str> {

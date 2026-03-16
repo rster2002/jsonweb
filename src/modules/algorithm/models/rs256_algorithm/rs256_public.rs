@@ -2,7 +2,7 @@ use rsa::pkcs1v15::{Signature, VerifyingKey};
 use rsa::signature::Verifier;
 use rsa::RsaPublicKey;
 use sha2::Sha256;
-use crate::algorithm::JwAlg;
+use crate::algorithm::JwAlgVerify;
 
 #[derive(Clone)]
 pub struct RS256Public {
@@ -10,7 +10,7 @@ pub struct RS256Public {
     verifying_key: VerifyingKey<Sha256>,
 }
 
-impl JwAlg for RS256Public {
+impl JwAlgVerify for RS256Public {
     type Error = rsa::signature::Error;
 
     fn alg() -> impl AsRef<str> {
