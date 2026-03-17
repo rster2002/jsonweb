@@ -1,9 +1,11 @@
 use std::convert::Infallible;
 use hmac::{Hmac, Mac};
 use hmac::digest::InvalidLength;
-use rand::RngCore;
 use sha2::Sha256;
 use crate::algorithm::JwAlg;
+
+#[cfg(feature = "rand")]
+use rand::RngCore;
 
 #[derive(Debug, Clone)]
 pub struct HS256Algorithm {
