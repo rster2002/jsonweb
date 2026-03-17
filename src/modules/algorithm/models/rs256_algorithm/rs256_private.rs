@@ -35,10 +35,6 @@ impl Debug for RS256Private {
 impl JwAlgVerify for RS256Private {
     type Error = rsa::signature::Error;
 
-    fn alg() -> impl AsRef<str> {
-        "RS256"
-    }
-
     fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
         let signature = Signature::try_from(signature)?;
 

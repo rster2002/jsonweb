@@ -13,9 +13,9 @@ pub struct RS256Public {
 impl JwAlgVerify for RS256Public {
     type Error = rsa::signature::Error;
 
-    fn alg() -> impl AsRef<str> {
-        "RS256"
-    }
+    // fn alg() -> impl AsRef<str> {
+    //     "RS256"
+    // }
 
     fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
         let signature = Signature::try_from(signature)?;

@@ -5,7 +5,7 @@ use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use crate::algorithm::{JwAlgVerify, JwAlgSign};
+use crate::algorithm::{JwAlgVerify, JwAlgSign, JwAlg};
 use crate::token::{JwtError, JwtHeader};
 use crate::token::models::jwt_claims::JwtClaims;
 
@@ -21,7 +21,7 @@ impl<T> Jwt<T>
 where T : Serialize + for<'a> Deserialize<'a>,
 {
     /// Takes the JWT instance, signs it, and returns the string representation for the token.
-    pub fn into_token<A: JwAlgSign>(self, algorithm: &A) -> Result<String, JwtError> {
+    pub fn into_token<A: JwAlg + JwAlgSign>(self, algorithm: &A) -> Result<String, JwtError> {
         let alg_ref = A::alg();
 
         let header = JwtHeader {
@@ -63,7 +63,7 @@ where T : Serialize + for<'a> Deserialize<'a>,
     /// instance with the expected payload. Note that this does not check any claims. To verify
     /// basic expiry claims, you can use [Jwt::verify_now] or you can further verify the token using
     /// [Jwt::against] or [Jwt::guard].
-    pub fn check<A: JwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
+    pub fn check<A: JwAlg + JwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
     where <A as JwAlgVerify>::Error: 'static
     {
         let mut parts = token.split('.');
@@ -103,7 +103,7 @@ where T : Serialize + for<'a> Deserialize<'a>,
 
     /// Largely the same as [Jwt::check], but also verifies basic expiry claims. You can further
     /// verify the token using [Jwt::against] or [Jwt::guard].
-    pub fn verify_now<A: JwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
+    pub fn verify_now<A: JwAlg + JwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
     where <A as JwAlgVerify>::Error: 'static
     {
         let jwt = Jwt::<T>::check(token, algorithm)?
