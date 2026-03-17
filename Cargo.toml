@@ -19,9 +19,16 @@ ecdsa = "0.16.9"
 
 [features]
 default = ["hs256"]
+hmac = ["hs256", "hs384", "hs512"]
 hs256 = ["dep:hmac", "dep:sha2"]
 hs384 = ["dep:hmac", "dep:sha2"]
 hs512 = ["dep:hmac", "dep:sha2"]
+
+rsassa-pkcs1-v1_5 = ["rs256", "rs384", "rs512"]
 rs256 = ["dep:rsa", "dep:sha2"]
+rs384 = ["dep:rsa", "dep:sha2"]
+rs512 = ["dep:rsa", "dep:sha2"]
+
+ecdsa = ["es256", "es384"]
 es256 = ["dep:p256"]
 es384 = ["dep:p384"]

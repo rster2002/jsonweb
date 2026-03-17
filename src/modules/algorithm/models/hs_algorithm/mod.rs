@@ -8,7 +8,6 @@ use ecdsa::signature::digest::HashMarker;
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use crate::algorithm::{JwAlgVerify, JwAlgSign, JwAlg};
-use crate::modules::key::JwKeyType;
 use hmac::digest::InvalidLength;
 
 pub struct HSAlg<D>(Hmac<D>)
