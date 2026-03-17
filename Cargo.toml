@@ -1,7 +1,13 @@
 [package]
 name = "jsonweb"
+description = "Models and traits for working with JWTs, JWAs, and JWKs with a focus on ease of use and simplicity."
+repository = "https://github.com/rster2002/jsonweb"
 version = "1.2.0"
 edition = "2024"
+license = "MIT"
+keywords = ["jwt", "jwa", "jwk"]
+readme = "readme.md"
+include = ["/src", "/LICENSE", "readme.md"]
 
 [dependencies]
 base64 = "0.22.1"
