@@ -8,7 +8,9 @@ use ecdsa::elliptic_curve::generic_array::ArrayLength;
 use ecdsa::signature::{Signer, Verifier};
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::algorithm::traits::jw_alg::JwAlg;
+use ecdsa::elliptic_curve::FieldBytes;
 
+#[derive(Clone)]
 pub struct ESPrivate<C>(SigningKey<C>)
 where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
       Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
@@ -26,6 +28,28 @@ impl JwAlg for ESPrivate<p256::NistP256> {
 impl JwAlg for ESPrivate<p384::NistP384> {
     fn alg() -> impl AsRef<str> {
         "ES384"
+    }
+}
+
+impl<C> ESPrivate<C>
+where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
+    Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
+    AffinePoint<C>: VerifyPrimitive<C>,
+    SignatureSize<C>: ArrayLength<u8>,
+{
+    #[cfg(feature = "rand")]
+    pub fn rand() -> Self {
+        let mut rng = rand::thread_rng();
+        ESPrivate::from(SigningKey::random(&mut rng))
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        self.0.to_bytes().to_vec()
+    }
+
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, ecdsa::Error> {
+        let field_bytes = FieldBytes::<C>::from_slice(bytes);
+        Ok(ESPrivate::from(SigningKey::from_bytes(field_bytes)?))
     }
 }
 
@@ -54,5 +78,35 @@ where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
     fn sign(&self, payload: &str) -> Vec<u8> {
         let signature: Signature<C> = Signer::sign(self, payload.as_bytes());
         signature.to_vec()
+    }
+}
+
+impl<C> From<SigningKey<C>> for ESPrivate<C>
+where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
+      Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
+      AffinePoint<C>: VerifyPrimitive<C>,
+      SignatureSize<C>: ArrayLength<u8>
+{
+    fn from(key: SigningKey<C>) -> Self {
+        ESPrivate(key)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::algorithm::ES256Private;
+
+    #[test]
+    fn es256_can_be_generated_randomly() {
+        ES256Private::rand();
+    }
+
+    #[test]
+    fn es256_to_and_from_bytes() {
+        let alg = ES256Private::rand();
+        let bytes = alg.to_bytes();
+
+        let alg2 = ES256Private::from_bytes(&bytes).unwrap();
+        assert_eq!(alg.0, alg2.0);
     }
 }

@@ -28,16 +28,16 @@ pub type ES384Public = ESPublic<p384::NistP384>;
 
 // HS
 #[cfg(any(feature = "hs256", feature = "hs384", feature = "hs512"))]
-use crate::algorithm::models::hs_algorithm::HSAlg;
+use crate::algorithm::models::hs_algorithm::HSPrivate;
 
 #[cfg(feature = "hs256")]
-pub type HS256Private = HSAlg<sha2::Sha256>;
+pub type HS256Private = HSPrivate<sha2::Sha256>;
 
 #[cfg(feature = "hs384")]
-pub type HS384Private = HSAlg<sha2::Sha384>;
+pub type HS384Private = HSPrivate<sha2::Sha384>;
 
 #[cfg(feature = "hs512")]
-pub type HS512Private = HSAlg<sha2::Sha512>;
+pub type HS512Private = HSPrivate<sha2::Sha512>;
 
 // RS
 #[cfg(any(feature = "rs256", feature = "rs384", feature = "rs512"))]

@@ -10,7 +10,11 @@ use sha2::Sha256;
 use crate::algorithm::{JwAlgVerify, JwAlgSign, JwAlg};
 use hmac::digest::InvalidLength;
 
-pub struct HSAlg<D>(Hmac<D>)
+#[cfg(feature = "rand")]
+use rand::RngCore;
+
+#[derive(Clone)]
+pub struct HSPrivate<D>(Hmac<D>)
 where D: CoreProxy,
       D::Core: HashMarker
       + UpdateCore
@@ -21,7 +25,7 @@ where D: CoreProxy,
       <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
       Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero;
 
-impl<D> HSAlg<D>
+impl<D> HSPrivate<D>
 where D: CoreProxy,
       D::Core: HashMarker
       + UpdateCore
@@ -33,18 +37,27 @@ where D: CoreProxy,
       Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
 {
     pub fn new(key: &[u8]) -> Result<Self, InvalidLength> {
-        Ok(HSAlg(Hmac::<D>::new_from_slice(key)?))
+        Ok(HSPrivate(Hmac::<D>::new_from_slice(key)?))
+    }
+
+    #[cfg(feature = "rand")]
+    pub fn rand() -> Result<Self, InvalidLength> {
+        let mut rng = rand::thread_rng();
+        let mut slice = [0u8; 32];
+        rng.fill_bytes(&mut slice);
+
+        HSPrivate::new(&slice)
     }
 }
 
 #[cfg(feature = "hs256")]
-impl JwAlg for HSAlg<Sha256> {
+impl JwAlg for HSPrivate<Sha256> {
     fn alg() -> impl AsRef<str> {
         "HS256"
     }
 }
 
-impl<D> JwAlgVerify for HSAlg<D>
+impl<D> JwAlgVerify for HSPrivate<D>
 where D: CoreProxy,
       D::Core: HashMarker
       + UpdateCore
@@ -69,7 +82,7 @@ where D: CoreProxy,
     }
 }
 
-impl<D> JwAlgSign for HSAlg<D>
+impl<D> JwAlgSign for HSPrivate<D>
 where D: CoreProxy,
       D::Core: HashMarker
       + UpdateCore
@@ -93,6 +106,7 @@ mod tests {
     use base64::Engine;
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use crate::algorithm::JwAlgSign;
+    use crate::algorithm::models::hs_algorithm::HSPrivate;
     use crate::modules::algorithm::{HS256Private, JwAlgVerify};
 
     #[test]
@@ -108,5 +122,10 @@ mod tests {
         let verify = alg.verify(payload, &signature_bytes).unwrap();
 
         assert!(verify);
+    }
+
+    #[test]
+    fn hs256_can_be_generated_randomly() {
+        HS256Private::rand().unwrap();
     }
 }

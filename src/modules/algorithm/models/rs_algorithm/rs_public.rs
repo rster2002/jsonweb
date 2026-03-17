@@ -3,6 +3,7 @@ use rsa::pkcs1v15::{Signature, VerifyingKey};
 use rsa::signature::Verifier;
 use crate::algorithm::{JwAlg, JwAlgVerify};
 
+#[derive(Clone)]
 pub struct RSPublic<D>(VerifyingKey<D>)
 where D : Digest;
 

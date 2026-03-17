@@ -5,6 +5,7 @@ use ecdsa::elliptic_curve::generic_array::ArrayLength;
 use ecdsa::hazmat::{DigestPrimitive, VerifyPrimitive};
 use ecdsa::signature::Verifier;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ESPublic<C>(VerifyingKey<C>)
 where
     C: PrimeCurve + CurveArithmetic + DigestPrimitive,

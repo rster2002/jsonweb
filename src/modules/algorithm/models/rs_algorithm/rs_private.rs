@@ -6,8 +6,39 @@ use rsa::RsaPrivateKey;
 use serde::{Deserialize, Serialize};
 use sha2::Digest;
 
+#[cfg(feature = "pkcs1")]
+use pkcs1::{DecodeRsaPrivateKey, EncodeRsaPrivateKey};
+
+#[derive(Clone)]
 pub struct RSPrivate<D>(SigningKey<D>)
-where D: Digest;
+where D: Digest + AssociatedOid;
+
+impl<D> RSPrivate<D>
+where D: Digest + AssociatedOid,
+{
+    #[cfg(feature = "rand")]
+    pub fn rand() -> Result<Self, rsa::Error> {
+        Self::rand_size(4096)
+    }
+
+    #[cfg(feature = "rand")]
+    pub fn rand_size(size: usize) -> Result<Self, rsa::Error> {
+        let mut rng = rand::thread_rng();
+        Ok(RSPrivate::from(SigningKey::random(&mut rng, size)?))
+    }
+
+    #[cfg(feature = "pkcs1")]
+    pub fn to_pkcs1_der_bytes(&self) -> Result<Vec<u8>, rsa::Error> {
+        Ok(self.0.to_pkcs1_der()?
+            .to_bytes()
+            .to_vec())
+    }
+
+    #[cfg(feature = "pkcs1")]
+    pub fn from_pkcs1_der_bytes(bytes: &[u8]) -> Result<Self, rsa::Error> {
+        Ok(RSPrivate::from(SigningKey::from_pkcs1_der(bytes)?))
+    }
+}
 
 #[cfg(feature = "rs256")]
 impl JwAlg for RSPrivate<sha2::Sha256> {
@@ -31,7 +62,7 @@ impl JwAlg for RSPrivate<sha2::Sha512> {
 }
 
 impl<D> JwAlgVerify for RSPrivate<D>
-where D: Digest,
+where D: Digest + AssociatedOid,
 {
     type Error = rsa::signature::Error;
 
@@ -43,7 +74,7 @@ where D: Digest,
 }
 
 impl<D> JwAlgSign for RSPrivate<D>
-where D: Digest,
+where D: Digest + AssociatedOid,
 {
     fn sign(&self, payload: &str) -> Vec<u8> {
         self.0.sign(payload.as_bytes()).to_vec()
@@ -51,7 +82,7 @@ where D: Digest,
 }
 
 impl<D> From<SigningKey<D>> for RSPrivate<D>
-where D: Digest,
+where D: Digest + AssociatedOid,
 {
     fn from(key: SigningKey<D>) -> Self {
         Self(key)
@@ -66,7 +97,7 @@ where D: Digest + AssociatedOid,
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "pkcs1"))]
 mod tests {
     use crate::algorithm::{JwAlgSign, JwAlgVerify, RS256Private};
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
