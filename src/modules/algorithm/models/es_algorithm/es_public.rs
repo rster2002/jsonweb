@@ -4,6 +4,7 @@ use crate::algorithm::{JwAlg, JwAlgVerify};
 use ecdsa::elliptic_curve::generic_array::ArrayLength;
 use ecdsa::hazmat::{DigestPrimitive, VerifyPrimitive};
 use ecdsa::signature::Verifier;
+use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ESPublic<C>(VerifyingKey<C>)
@@ -19,10 +20,24 @@ impl JwAlg for ESPublic<p256::NistP256> {
     }
 }
 
+#[cfg(feature = "es256")]
+impl PartialJwAlg for ESPublic<p256::NistP256> {
+    fn partial_alg() -> Option<impl AsRef<str>> {
+        Some(Self::alg())
+    }
+}
+
 #[cfg(feature = "es384")]
 impl JwAlg for ESPublic<p384::NistP384> {
     fn alg() -> impl AsRef<str> {
         "ES384"
+    }
+}
+
+#[cfg(feature = "es384")]
+impl PartialJwAlg for ESPublic<p384::NistP384> {
+    fn partial_alg() -> Option<impl AsRef<str>> {
+        Some(Self::alg())
     }
 }
 

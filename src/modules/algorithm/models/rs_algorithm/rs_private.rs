@@ -8,6 +8,7 @@ use sha2::Digest;
 
 #[cfg(feature = "pkcs1")]
 use pkcs1::{DecodeRsaPrivateKey, EncodeRsaPrivateKey};
+use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
 
 #[derive(Clone)]
 pub struct RSPrivate<D>(SigningKey<D>)
@@ -47,6 +48,13 @@ impl JwAlg for RSPrivate<sha2::Sha256> {
     }
 }
 
+#[cfg(feature = "rs256")]
+impl PartialJwAlg for RSPrivate<sha2::Sha256> {
+    fn partial_alg() -> Option<impl AsRef<str>> {
+        Some(Self::alg())
+    }
+}
+
 #[cfg(feature = "rs384")]
 impl JwAlg for RSPrivate<sha2::Sha384> {
     fn alg() -> impl AsRef<str> {
@@ -54,10 +62,24 @@ impl JwAlg for RSPrivate<sha2::Sha384> {
     }
 }
 
+#[cfg(feature = "rs384")]
+impl PartialJwAlg for RSPrivate<sha2::Sha384> {
+    fn partial_alg() -> Option<impl AsRef<str>> {
+        Some(Self::alg())
+    }
+}
+
 #[cfg(feature = "rs512")]
 impl JwAlg for RSPrivate<sha2::Sha512> {
     fn alg() -> impl AsRef<str> {
         "RS512"
+    }
+}
+
+#[cfg(feature = "rs512")]
+impl PartialJwAlg for RSPrivate<sha2::Sha512> {
+    fn partial_alg() -> Option<impl AsRef<str>> {
+        Some(Self::alg())
     }
 }
 

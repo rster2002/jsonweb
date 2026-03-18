@@ -72,7 +72,9 @@ where T : Serialize + for<'a> Deserialize<'a>,
         let header_bytes = BASE64_URL_SAFE_NO_PAD.decode(header_string.as_bytes())?;
         let header: JwtHeader = serde_json::from_slice(&header_bytes)?;
 
-        if header.alg != Cow::Borrowed(A::alg().as_ref()) {
+        if let Some(alg_ref) = A::partial_alg()
+            && header.alg != Cow::Borrowed(alg_ref.as_ref())
+        {
             return Err(JwtError::AlgMismatch);
         }
 

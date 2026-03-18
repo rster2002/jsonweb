@@ -12,6 +12,7 @@ use hmac::digest::InvalidLength;
 
 #[cfg(feature = "rand")]
 use rand::RngCore;
+use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
 
 #[derive(Clone)]
 pub struct HSPrivate<D>(Hmac<D>)
@@ -54,6 +55,13 @@ where D: CoreProxy,
 impl JwAlg for HSPrivate<Sha256> {
     fn alg() -> impl AsRef<str> {
         "HS256"
+    }
+}
+
+#[cfg(feature = "hs256")]
+impl PartialJwAlg for HSPrivate<Sha256> {
+    fn partial_alg() -> Option<impl AsRef<str>> {
+        Some(Self::alg())
     }
 }
 

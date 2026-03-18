@@ -4,6 +4,7 @@ mod traits;
 pub use traits::jw_alg_verify::JwAlgVerify;
 pub use traits::jw_alg_sign::JwAlgSign;
 pub use traits::jw_alg::JwAlg;
+pub use traits::partial_jw_alg::PartialJwAlg;
 
 pub use models::none_algorithm::NoneAlgorithm;
 
