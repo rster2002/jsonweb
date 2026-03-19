@@ -1,6 +1,12 @@
 mod models;
 mod traits;
-pub mod error;
+mod error;
+
+pub use traits::jwk_private_params::JwkPrivateParams;
+pub use traits::jwk_public_params::JwkPublicParams;
+pub use traits::jwk_type::JwkType;
+pub use models::jwk::Jwk;
+pub use error::JwkError;
 
 #[cfg(all(test, feature = "rs256"))]
 mod tests {

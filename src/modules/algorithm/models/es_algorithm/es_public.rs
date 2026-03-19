@@ -13,34 +13,6 @@ where
     AffinePoint<C>: VerifyPrimitive<C>,
     SignatureSize<C>: ArrayLength<u8>;
 
-#[cfg(feature = "es256")]
-impl JwAlg for ESPublic<p256::NistP256> {
-    fn alg() -> impl AsRef<str> {
-        "ES256"
-    }
-}
-
-#[cfg(feature = "es256")]
-impl PartialJwAlg for ESPublic<p256::NistP256> {
-    fn partial_alg() -> Option<impl AsRef<str>> {
-        Some(Self::alg())
-    }
-}
-
-#[cfg(feature = "es384")]
-impl JwAlg for ESPublic<p384::NistP384> {
-    fn alg() -> impl AsRef<str> {
-        "ES384"
-    }
-}
-
-#[cfg(feature = "es384")]
-impl PartialJwAlg for ESPublic<p384::NistP384> {
-    fn partial_alg() -> Option<impl AsRef<str>> {
-        Some(Self::alg())
-    }
-}
-
 impl<C> JwAlgVerify for ESPublic<C>
 where
     C: PrimeCurve + CurveArithmetic + DigestPrimitive,

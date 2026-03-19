@@ -10,41 +10,14 @@ use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::algorithm::traits::jw_alg::JwAlg;
 use ecdsa::elliptic_curve::FieldBytes;
 use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
+use crate::modules::key::{JwkPrivateParams, JwkType};
 
 #[derive(Clone)]
-pub struct ESPrivate<C>(SigningKey<C>)
+pub struct ESPrivate<C>(pub SigningKey<C>)
 where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
       Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
       AffinePoint<C>: VerifyPrimitive<C>,
       SignatureSize<C>: ArrayLength<u8>;
-
-#[cfg(feature = "es256")]
-impl JwAlg for ESPrivate<p256::NistP256> {
-    fn alg() -> impl AsRef<str> {
-        "ES256"
-    }
-}
-
-#[cfg(feature = "es256")]
-impl PartialJwAlg for ESPrivate<p256::NistP256> {
-    fn partial_alg() -> Option<impl AsRef<str>> {
-        Some(Self::alg())
-    }
-}
-
-#[cfg(feature = "es384")]
-impl JwAlg for ESPrivate<p384::NistP384> {
-    fn alg() -> impl AsRef<str> {
-        "ES384"
-    }
-}
-
-#[cfg(feature = "es384")]
-impl PartialJwAlg for ESPrivate<p384::NistP384> {
-    fn partial_alg() -> Option<impl AsRef<str>> {
-        Some(Self::alg())
-    }
-}
 
 impl<C> ESPrivate<C>
 where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
@@ -93,6 +66,17 @@ where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
     fn sign(&self, payload: &str) -> Vec<u8> {
         let signature: Signature<C> = Signer::sign(self, payload.as_bytes());
         signature.to_vec()
+    }
+}
+
+impl<C> JwkType for ESPrivate<C>
+where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
+      Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
+      AffinePoint<C>: VerifyPrimitive<C>,
+      SignatureSize<C>: ArrayLength<u8>,
+{
+    fn kty() -> impl AsRef<str> {
+        "EC"
     }
 }
 
