@@ -13,7 +13,7 @@ use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
 use crate::modules::key::{JwkPrivateParams, JwkType};
 
 #[derive(Clone)]
-pub struct ESPrivate<C>(pub SigningKey<C>)
+pub struct ESPrivate<C>(pub(crate) SigningKey<C>)
 where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
       Scalar<C>: Invert<Output = CtOption<Scalar<C>>> + SignPrimitive<C>,
       AffinePoint<C>: VerifyPrimitive<C>,
