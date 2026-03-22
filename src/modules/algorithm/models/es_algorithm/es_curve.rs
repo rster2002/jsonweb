@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum EsCurve {
+pub enum ESCurve {
     #[serde(rename = "P-256")]
     P256,
 

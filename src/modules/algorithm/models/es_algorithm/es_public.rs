@@ -7,7 +7,7 @@ use ecdsa::signature::Verifier;
 use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ESPublic<C>(VerifyingKey<C>)
+pub struct ESPublic<C>(pub(crate) VerifyingKey<C>)
 where
     C: PrimeCurve + CurveArithmetic + DigestPrimitive,
     AffinePoint<C>: VerifyPrimitive<C>,

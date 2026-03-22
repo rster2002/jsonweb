@@ -19,6 +19,9 @@ pub struct Jwk {
 
     #[serde(rename = "x5t#S256")]
     pub x5t_s256: Option<String>,
+
+    #[serde(flatten)]
+    pub params: Option<Value>,
 }
 
 impl TryFrom<Value> for Jwk {
