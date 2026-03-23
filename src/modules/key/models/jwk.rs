@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::modules::key::models::jwk_params::JwkParams;
 use crate::modules::key::models::jwt_key_op::JwtKeyOp;
 use crate::modules::key::models::jwt_use::JwtUse;
 use crate::token::JwtError;
@@ -21,13 +22,7 @@ pub struct Jwk {
     pub x5t_s256: Option<String>,
 
     #[serde(flatten)]
-    pub params: Option<Value>,
+    pub params: JwkParams,
 }
 
-impl TryFrom<Value> for Jwk {
-    type Error = JwtError;
-
-    fn try_from(value: Value) -> Result<Self, Self::Error> {
-        todo!()
-    }
-}
+impl 

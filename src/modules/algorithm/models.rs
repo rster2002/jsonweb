@@ -7,4 +7,4 @@ pub mod hs_algorithm;
 pub mod rs_algorithm;
 
 #[cfg(any(feature = "es256", feature = "es384"))]
-pub mod es_algorithm;
+pub mod es;

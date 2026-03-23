@@ -1,9 +1,11 @@
 use crate::algorithm::{JwAlg, PartialJwAlg};
-use crate::algorithm::models::es_algorithm::es_private::ESPrivate;
-use crate::algorithm::models::es_algorithm::es_public::ESPublic;
+use crate::algorithm::models::es::es_private::ESPrivate;
+use crate::algorithm::models::es::es_public::ESPublic;
 
 // Private
-impl JwAlg for ESPrivate<p384::NistP384> {
+pub type ES384Private = ESPrivate<p384::NistP384>;
+
+impl JwAlg for ES384Private {
     fn alg() -> impl AsRef<str> {
         "ES384"
     }
@@ -16,14 +18,15 @@ impl PartialJwAlg for ESPrivate<p384::NistP384> {
 }
 
 // Public
+pub type ES384Public = ESPublic<p384::NistP384>;
 
-impl JwAlg for ESPublic<p384::NistP384> {
+impl JwAlg for ES384Public {
     fn alg() -> impl AsRef<str> {
         "ES384"
     }
 }
 
-impl PartialJwAlg for ESPublic<p384::NistP384> {
+impl PartialJwAlg for ES384Public {
     fn partial_alg() -> Option<impl AsRef<str>> {
         Some(Self::alg())
     }

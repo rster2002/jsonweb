@@ -3,28 +3,29 @@ use base64::prelude::BASE64_URL_SAFE;
 use ecdsa::elliptic_curve::point::{AffineCoordinates, DecompressPoint};
 use ecdsa::EncodedPoint;
 use crate::algorithm::{JwAlg, PartialJwAlg};
-use crate::algorithm::models::es_algorithm::es_curve::ESCurve;
-use crate::algorithm::models::es_algorithm::es_private::ESPrivate;
-use crate::algorithm::models::es_algorithm::es_private_params::EsPrivateParams;
-use crate::algorithm::models::es_algorithm::es_public::ESPublic;
-use crate::algorithm::models::es_algorithm::es_public_params::ESPublicParams;
+use crate::algorithm::es::{ESPublic, ESPublicParams};
+use crate::algorithm::models::es::es_curve::ESCurve;
+use crate::algorithm::models::es::es_private::ESPrivate;
+use crate::algorithm::models::es::es_private_params::ESPrivateParams;
 use crate::modules::key::JwkPrivateParams;
 
 // Private
-impl JwAlg for ESPrivate<p256::NistP256> {
+pub type ES256Private = ESPrivate<p256::NistP256>;
+
+impl JwAlg for ES256Private {
     fn alg() -> impl AsRef<str> {
         "ES256"
     }
 }
 
-impl PartialJwAlg for ESPrivate<p256::NistP256> {
+impl PartialJwAlg for ES256Private {
     fn partial_alg() -> Option<impl AsRef<str>> {
         Some(Self::alg())
     }
 }
 
-impl JwkPrivateParams<'_> for ESPrivate<p256::NistP256> {
-    type PrivateParams = EsPrivateParams;
+impl JwkPrivateParams<'_> for ES256Private {
+    type PrivateParams = ESPrivateParams;
 
     fn get_private_params(&self) -> Option<Self::PrivateParams> {
         let verifying_key = self.0.verifying_key();
@@ -35,7 +36,7 @@ impl JwkPrivateParams<'_> for ESPrivate<p256::NistP256> {
 
         let d_bytes = self.0.as_nonzero_scalar().to_bytes();
 
-        Some(EsPrivateParams {
+        Some(ESPrivateParams {
             crv: ESCurve::P256,
             x: BASE64_URL_SAFE.encode(&x),
             y: BASE64_URL_SAFE.encode(&y),
@@ -45,19 +46,21 @@ impl JwkPrivateParams<'_> for ESPrivate<p256::NistP256> {
 }
 
 // Public
-impl JwAlg for ESPublic<p256::NistP256> {
+pub type ES256Public = ESPublic<p256::NistP256>;
+
+impl JwAlg for ES256Public {
     fn alg() -> impl AsRef<str> {
         "ES256"
     }
 }
 
-impl PartialJwAlg for ESPublic<p256::NistP256> {
+impl PartialJwAlg for ES256Public {
     fn partial_alg() -> Option<impl AsRef<str>> {
         Some(Self::alg())
     }
 }
 
-impl JwkPrivateParams<'_> for ESPublic<p256::NistP256> {
+impl JwkPrivateParams<'_> for ES256Public {
     type PrivateParams = ESPublicParams;
 
     fn get_private_params(&self) -> Option<Self::PrivateParams> {

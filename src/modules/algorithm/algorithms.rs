@@ -1,9 +1,3 @@
-#[cfg(feature = "es256")]
-pub mod es256;
-
-#[cfg(feature = "es384")]
-pub mod es384;
-
 #[cfg(feature = "hs256")]
 pub mod hs256;
 

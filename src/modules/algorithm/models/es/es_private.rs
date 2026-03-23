@@ -93,7 +93,7 @@ where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::ES256Private;
+    use crate::algorithm::es::es256::ES256Private;
 
     #[test]
     fn es256_can_be_generated_randomly() {

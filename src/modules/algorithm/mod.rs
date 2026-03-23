@@ -9,24 +9,8 @@ pub use traits::partial_jw_alg::PartialJwAlg;
 
 pub use models::none_algorithm::NoneAlgorithm;
 
-// ES
 #[cfg(any(feature = "es256", feature = "es384"))]
-use crate::algorithm::models::es_algorithm::es_private::ESPrivate;
-
-#[cfg(any(feature = "es256", feature = "es384"))]
-use crate::algorithm::models::es_algorithm::es_public::ESPublic;
-
-#[cfg(feature = "es256")]
-pub type ES256Private = ESPrivate<p256::NistP256>;
-
-#[cfg(feature = "es256")]
-pub type ES256Public = ESPublic<p256::NistP256>;
-
-#[cfg(feature = "es384")]
-pub type ES384Private = ESPrivate<p384::NistP384>;
-
-#[cfg(feature = "es384")]
-pub type ES384Public = ESPublic<p384::NistP384>;
+pub use models::es;
 
 // HS
 #[cfg(any(feature = "hs256", feature = "hs384", feature = "hs512"))]
