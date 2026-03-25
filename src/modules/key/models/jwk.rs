@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::algorithm::JwAlgVerify;
 use crate::modules::key::models::jwk_params::JwkParams;
 use crate::modules::key::models::jwt_key_op::JwtKeyOp;
 use crate::modules::key::models::jwt_use::JwtUse;
@@ -25,4 +26,8 @@ pub struct Jwk {
     pub params: JwkParams,
 }
 
-impl 
+impl Jwk {
+    // pub fn public_alg() -> Option<Box<dyn JwAlgVerify>> {
+    //
+    // }
+}

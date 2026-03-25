@@ -7,4 +7,3 @@ pub mod jwt_use;
 pub mod jwt_key_op;
 pub mod jwt_set;
 pub mod jwk_params;
-pub mod jwk_qualified;

@@ -11,7 +11,10 @@ pub use es_curve::*;
 pub use es_public_params::*;
 
 #[cfg(feature = "es256")]
-pub mod es256;
+mod es256;
+
+#[cfg(feature = "es256")]
+pub use es256::*;
 
 #[cfg(feature = "es384")]
 pub mod es384;

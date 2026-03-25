@@ -79,11 +79,12 @@ where D: Digest + AssociatedOid,
 
 #[cfg(all(test, feature = "pkcs1"))]
 mod tests {
-    use crate::algorithm::{JwAlgSign, JwAlgVerify, RS256Private};
+    use crate::algorithm::{JwAlgSign, JwAlgVerify};
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use base64::Engine;
     use pkcs1::DecodeRsaPrivateKey;
     pub use rsa::RsaPrivateKey;
+    use crate::algorithm::rs::RS256Private;
 
     #[test]
     fn rs256_algorithm_works_as_expected() {

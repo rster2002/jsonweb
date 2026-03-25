@@ -1,28 +1,32 @@
 use crate::algorithm::{JwAlg, PartialJwAlg};
-use crate::algorithm::models::rs_algorithm::rs_private::RSPrivate;
-use crate::algorithm::models::rs_algorithm::rs_public::RSPublic;
+use crate::algorithm::models::rs::rs_private::RSPrivate;
+use crate::algorithm::models::rs::rs_public::RSPublic;
 
 // Private
-impl JwAlg for RSPrivate<sha2::Sha384> {
+pub type RS384Private = RSPrivate<sha2::Sha384>;
+
+impl JwAlg for RS384Private {
     fn alg() -> impl AsRef<str> {
         "RS384"
     }
 }
 
-impl PartialJwAlg for RSPrivate<sha2::Sha384> {
+impl PartialJwAlg for RS384Private {
     fn partial_alg() -> Option<impl AsRef<str>> {
         Some(Self::alg())
     }
 }
 
 // Public
-impl JwAlg for RSPublic<sha2::Sha384> {
+pub type RS384Public = RSPublic<sha2::Sha384>;
+
+impl JwAlg for RS384Public {
     fn alg() -> impl AsRef<str> {
         "RS384"
     }
 }
 
-impl PartialJwAlg for RSPublic<sha2::Sha384> {
+impl PartialJwAlg for RS384Public {
     fn partial_alg() -> Option<impl AsRef<str>> {
         Some(Self::alg())
     }

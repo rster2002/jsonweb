@@ -12,6 +12,12 @@ use hmac::digest::InvalidLength;
 #[cfg(feature = "rand")]
 use rand::RngCore;
 
+#[cfg(feature = "hs256")]
+mod hs256;
+
+#[cfg(feature = "hs256")]
+pub use hs256::HS256Private;
+
 #[derive(Clone)]
 pub struct HSPrivate<D>(Hmac<D>)
 where D: CoreProxy,
@@ -97,9 +103,9 @@ where D: CoreProxy,
 mod tests {
     use base64::Engine;
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+    use crate::algorithm::hs::HS256Private;
     use crate::algorithm::JwAlgSign;
-    use crate::algorithm::models::hs_algorithm::HSPrivate;
-    use crate::modules::algorithm::{HS256Private, JwAlgVerify};
+    use crate::modules::algorithm::{JwAlgVerify};
 
     #[test]
     fn hs256_algorithm_works_as_expected() {

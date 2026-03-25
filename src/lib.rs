@@ -5,7 +5,7 @@ pub use modules::algorithm;
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::ES256Private;
+    use crate::algorithm::es::ES256Private;
     use crate::modules::key::JwkPrivateParams;
 
     #[test]

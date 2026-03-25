@@ -8,7 +8,8 @@ pub use error::JwtError;
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::{HS256Private, JwAlgVerify};
+    use crate::algorithm::{JwAlgVerify};
+    use crate::algorithm::hs::HS256Private;
     use crate::token::Jwt;
 
     #[test]
