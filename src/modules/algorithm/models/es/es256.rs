@@ -7,7 +7,7 @@ use crate::algorithm::es::{ESPublic, ESPublicParams};
 use crate::algorithm::models::es::es_curve::ESCurve;
 use crate::algorithm::models::es::es_private::ESPrivate;
 use crate::algorithm::models::es::es_private_params::ESPrivateParams;
-use crate::modules::key::JwkPrivateParams;
+use crate::modules::key::{JwkPrivateParams, JwkPublicParams};
 
 // Private
 pub type ES256Private = ESPrivate<p256::NistP256>;
@@ -60,10 +60,10 @@ impl PartialJwAlg for ES256Public {
     }
 }
 
-impl JwkPrivateParams<'_> for ES256Public {
-    type PrivateParams = ESPublicParams;
+impl JwkPublicParams<'_> for ES256Public {
+    type PublicParams = ESPublicParams;
 
-    fn get_private_params(&self) -> Option<Self::PrivateParams> {
+    fn get_public_params(&self) -> Option<Self::PublicParams> {
         let affine_point = self.0.as_affine();
         let encoded_point: EncodedPoint<p256::NistP256> = affine_point.clone().into(); // TODO remove clone
         let x = encoded_point.x()?;

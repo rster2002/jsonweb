@@ -8,3 +8,4 @@ pub mod rs;
 
 #[cfg(any(feature = "es256", feature = "es384"))]
 pub mod es;
+pub mod any;
