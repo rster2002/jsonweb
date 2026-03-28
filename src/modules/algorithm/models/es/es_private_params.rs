@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use crate::algorithm::es::ESCurve;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ESPrivateParams {
     pub crv: ESCurve,
     pub x: String,

@@ -15,6 +15,8 @@ pub use rs384::*;
 
 #[cfg(feature = "rs512")]
 pub mod rs512;
+pub mod rs_private_params;
+pub mod rs_public_params;
 
 #[cfg(feature = "rs512")]
 pub use rs512::*;

@@ -4,7 +4,7 @@ use rsa::signature::Verifier;
 use crate::algorithm::{JwAlgVerify};
 
 #[derive(Clone)]
-pub struct RSPublic<D>(VerifyingKey<D>)
+pub struct RSPublic<D>(pub(crate) VerifyingKey<D>)
 where D : Digest;
 
 impl<D> JwAlgVerify for RSPublic<D>

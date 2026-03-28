@@ -1,5 +1,5 @@
 use base64::Engine;
-use base64::prelude::BASE64_URL_SAFE;
+use base64::prelude::{BASE64_URL_SAFE, BASE64_URL_SAFE_NO_PAD};
 use ecdsa::elliptic_curve::point::{AffineCoordinates, DecompressPoint};
 use ecdsa::EncodedPoint;
 use crate::algorithm::{JwAlg, PartialJwAlg};
@@ -38,9 +38,9 @@ impl JwkPrivateParams<'_> for ES256Private {
 
         Some(ESPrivateParams {
             crv: ESCurve::P256,
-            x: BASE64_URL_SAFE.encode(&x),
-            y: BASE64_URL_SAFE.encode(&y),
-            d: BASE64_URL_SAFE.encode(&d_bytes),
+            x: BASE64_URL_SAFE_NO_PAD.encode(&x),
+            y: BASE64_URL_SAFE_NO_PAD.encode(&y),
+            d: BASE64_URL_SAFE_NO_PAD.encode(&d_bytes),
         })
     }
 }
@@ -71,8 +71,14 @@ impl JwkPublicParams<'_> for ES256Public {
 
         Some(ESPublicParams {
             crv: ESCurve::P256,
-            x: BASE64_URL_SAFE.encode(&x),
-            y: BASE64_URL_SAFE.encode(&y),
+            x: BASE64_URL_SAFE_NO_PAD.encode(&x),
+            y: BASE64_URL_SAFE_NO_PAD.encode(&y),
         })
+    }
+}
+
+impl From<ES256Private> for ES256Public {
+    fn from(value: ES256Private) -> Self {
+        Self(value.0.into())
     }
 }
