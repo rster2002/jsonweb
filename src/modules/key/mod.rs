@@ -10,6 +10,7 @@ pub use error::JwkError;
 
 #[cfg(all(test, feature = "rs256"))]
 mod tests {
+    use std::fs::read_to_string;
     use pkcs1::DecodeRsaPrivateKey;
     use rsa::RsaPrivateKey;
     use serde_json::json;
@@ -17,11 +18,7 @@ mod tests {
 
     #[test]
     fn jwk_is_created_correctly() {
-        // let ec_key = Jwk::try_from(json!({
-        //     "kty": "EC",
-        //     "crv": "P-256",
-        //     "x": "",
-        //     "y": "",
-        // }));
+        let string = read_to_string("./test-files/es256-private.jwks.json")
+            .unwrap();
     }
 }

@@ -1,3 +1,4 @@
+#[derive(Debug, Clone)]
 pub enum AnyPrivate {
     #[cfg(feature = "es256")]
     ES256Private(crate::algorithm::es::ES256Private),

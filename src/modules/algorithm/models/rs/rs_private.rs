@@ -10,7 +10,7 @@ use sha2::Digest;
 use pkcs1::{DecodeRsaPrivateKey, EncodeRsaPrivateKey};
 use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct RSPrivate<D>(pub(crate) SigningKey<D>)
 where D: Digest + AssociatedOid;
 

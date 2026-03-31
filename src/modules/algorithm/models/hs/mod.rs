@@ -1,5 +1,5 @@
 use std::convert::Infallible;
-use std::fmt::{Debug};
+use std::fmt::{Debug, Formatter};
 use ecdsa::elliptic_curve::consts::U256;
 use ecdsa::elliptic_curve::generic_array::typenum::{IsLess, Le, NonZero};
 use ecdsa::signature::digest::block_buffer::Eager;
@@ -96,6 +96,22 @@ where D: CoreProxy,
         inner.update(payload.as_bytes());
 
         inner.finalize().into_bytes().to_vec()
+    }
+}
+
+impl<D> Debug for HSPrivate<D>
+where D: CoreProxy,
+      D::Core: HashMarker
+      + UpdateCore
+      + FixedOutputCore
+      + BufferKindUser<BufferKind = Eager>
+      + Default
+      + Clone,
+      <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
+      Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "HSPrivate(..)")
     }
 }
 
