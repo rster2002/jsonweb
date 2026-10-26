@@ -96,11 +96,13 @@ mod tests {
     use crate::algorithm::es::es256::ES256Private;
 
     #[test]
+    #[cfg(feature = "rand")]
     fn es256_can_be_generated_randomly() {
         ES256Private::rand();
     }
 
     #[test]
+    #[cfg(feature = "rand")]
     fn es256_to_and_from_bytes() {
         let alg = ES256Private::rand();
         let bytes = alg.to_bytes();

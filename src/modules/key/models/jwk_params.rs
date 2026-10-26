@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+/// The different types of JWK parameters that can be used in a JWK.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum JwkParams {
