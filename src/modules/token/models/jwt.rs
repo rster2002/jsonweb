@@ -52,7 +52,7 @@ where T : Serialize + for<'a> Deserialize<'a>,
         let payload_string = BASE64_URL_SAFE_NO_PAD.encode(&bytes);
 
         let target = format!("{}.{}", header_string, payload_string);
-        let signature = algorithm.sign(&target);
+        let signature = algorithm.sign(target.as_bytes());
 
         let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature);
 

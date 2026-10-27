@@ -91,9 +91,9 @@ where D: CoreProxy,
       <D::Core as BlockSizeUser>::BlockSize: IsLess<U256>,
       Le<<D::Core as BlockSizeUser>::BlockSize, U256>: NonZero,
 {
-    fn sign(&self, payload: &str) -> Vec<u8> {
+    fn sign(&self, payload: &[u8]) -> Vec<u8> {
         let mut inner = self.0.clone();
-        inner.update(payload.as_bytes());
+        inner.update(payload);
 
         inner.finalize().into_bytes().to_vec()
     }
@@ -128,7 +128,7 @@ mod tests {
         let payload = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoaiI6dHJ1ZX0";
         let alg = HS256Private::new("qwed".as_ref()).unwrap();
 
-        let signature_bytes = alg.sign(payload);
+        let signature_bytes = alg.sign(payload.as_bytes());
         let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature_bytes);
 
         assert_eq!(signature_string, "AeQU9YyCnBlrJwtd1PVmGW3apn6kQ6yi_U4qT9o0vkQ");

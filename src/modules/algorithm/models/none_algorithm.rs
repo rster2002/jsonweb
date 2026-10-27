@@ -13,7 +13,7 @@ impl JwAlgVerify for NoneAlgorithm {
 }
 
 impl JwAlgSign for NoneAlgorithm {
-    fn sign(&self, _: &str) -> Vec<u8> {
+    fn sign(&self, _: &[u8]) -> Vec<u8> {
         vec![]
     }
 }
