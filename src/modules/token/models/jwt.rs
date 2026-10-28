@@ -5,7 +5,9 @@ use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use crate::algorithm::{JwAlgVerify, JwAlgSign, JwAlg};
+use crate::algorithm::{JwAlgVerify, JwAlgSign, JwAlg, PartialJwAlg, PartialJwAlgVerify};
+use crate::modules::header::JoseHeader;
+use crate::modules::signature::verify_compact;
 use crate::token::{JwtError, JwtHeader};
 use crate::token::models::jwt_claims::JwtClaims;
 
@@ -24,11 +26,10 @@ where T : Serialize + for<'a> Deserialize<'a>,
     pub fn into_token<A: JwAlg + JwAlgSign>(self, algorithm: &A) -> Result<String, JwtError> {
         let alg_ref = A::alg();
 
-        let header = JwtHeader {
-            alg: Cow::Borrowed(alg_ref.as_ref()),
-            typ: Cow::Borrowed("JWT"),
-            cty: None,
-        };
+        let header = JoseHeader::builder()
+            .alg(alg_ref.as_ref().to_string())
+            .typ("JWT".into())
+            .build();
 
         let header_bytes = serde_json::to_vec(&header)?;
         let header_string = BASE64_URL_SAFE_NO_PAD.encode(&header_bytes);
@@ -63,39 +64,19 @@ where T : Serialize + for<'a> Deserialize<'a>,
     /// instance with the expected payload. Note that this does not check any claims. To verify
     /// basic expiry claims, you can use [Jwt::verify_now] or you can further verify the token using
     /// [Jwt::against] or [Jwt::guard].
-    pub fn check<A: JwAlg + JwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
-    where <A as JwAlgVerify>::Error: 'static
+    pub fn check<A: PartialJwAlg + PartialJwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
+    where <A as PartialJwAlgVerify>::Error: 'static
     {
-        let mut parts = token.split('.');
+        let payload_bytes = verify_compact(
+            token,
+            algorithm,
+        )?;
 
-        let header_string = parts.next().ok_or(JwtError::NoHeader)?;
-        let header_bytes = BASE64_URL_SAFE_NO_PAD.decode(header_string.as_bytes())?;
-        let header: JwtHeader = serde_json::from_slice(&header_bytes)?;
-
-        if let Some(alg_ref) = A::partial_alg()
-            && header.alg != Cow::Borrowed(alg_ref.as_ref())
-        {
-            return Err(JwtError::AlgMismatch);
-        }
-
-        let payload_string = parts.next().ok_or(JwtError::NoPayload)?;
-        let payload_bytes = BASE64_URL_SAFE_NO_PAD.decode(payload_string.as_bytes())?;
         let payload: T = serde_json::from_slice(&payload_bytes)?;
 
         // Unwrap or default as these would then be checked later.
         let claims = serde_json::from_slice(&payload_bytes)
             .unwrap_or_default();
-
-        let signature_string = parts.next().ok_or(JwtError::NoSignature)?;
-        let signature_bytes = BASE64_URL_SAFE_NO_PAD.decode(signature_string.as_bytes())?;
-
-        let target = format!("{}.{}", header_string, payload_string);
-        let verified = algorithm.verify(&target, &signature_bytes)
-            .map_err(|e| JwtError::AlgError(Box::new(e)))?;
-
-        if !verified {
-            return Err(JwtError::InvalidSignature);
-        }
 
         Ok(Jwt {
             payload,

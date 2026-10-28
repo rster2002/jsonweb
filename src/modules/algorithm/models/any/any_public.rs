@@ -22,7 +22,7 @@ pub enum AnyPublic {
 impl JwAlgVerify for AnyPublic {
     type Error = AnyError;
 
-    fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
         Ok(match self {
             #[cfg(feature = "es256")]
             AnyPublic::ES256Public(inner) => inner.verify(payload, signature)?,

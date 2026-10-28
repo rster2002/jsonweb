@@ -46,18 +46,18 @@ where D: Digest + AssociatedOid,
 {
     type Error = rsa::signature::Error;
 
-    fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
         let signature = Signature::try_from(signature)?;
 
-        Ok(self.0.verifying_key().verify(payload.as_bytes(), &signature).is_ok())
+        Ok(self.0.verifying_key().verify(payload, &signature).is_ok())
     }
 }
 
 impl<D> JwAlgSign for RSPrivate<D>
 where D: Digest + AssociatedOid,
 {
-    fn sign(&self, payload: &str) -> Vec<u8> {
-        self.0.sign(payload.as_bytes()).to_vec()
+    fn sign(&self, payload: &[u8]) -> Vec<u8> {
+        self.0.sign(payload).to_vec()
     }
 }
 

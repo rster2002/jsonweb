@@ -21,9 +21,12 @@ where
 {
     type Error = ecdsa::Error;
 
-    fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
-        let signature = Signature::<C>::try_from(signature).unwrap(); // TODO return false
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
+        let signature = match Signature::<C>::try_from(signature) {
+            Ok(sig) => sig,
+            Err(_) => return Ok(false),
+        };
 
-        Ok(self.0.verify(payload.as_bytes(), &signature).is_ok())
+        Ok(self.0.verify(payload, &signature).is_ok())
     }
 }

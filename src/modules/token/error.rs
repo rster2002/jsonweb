@@ -1,4 +1,5 @@
 use thiserror::Error;
+use crate::modules::signature::JwsError;
 
 #[derive(Debug, Error)]
 #[error(transparent)]
@@ -6,6 +7,7 @@ pub enum JwtError {
     SerdeJson(#[from] serde_json::Error),
     DecodeError(#[from] base64::DecodeError),
     AlgError(Box<dyn std::error::Error>),
+    JwsError(#[from] JwsError),
 
     #[error("When setting claims, the payload must serialize to a JSON object")]
     PayloadNotAnObject,

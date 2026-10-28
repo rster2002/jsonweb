@@ -8,16 +8,10 @@ pub struct JwtSet {
     pub keys: Vec<Jwk>,
 }
 
-impl PartialJwAlg for JwtSet {
-    fn partial_alg() -> Option<impl AsRef<str>> {
-        None::<&'static str>
-    }
-}
-
 impl JwAlgVerify for JwtSet {
     type Error = JwkError;
 
-    fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
         todo!()
     }
 }

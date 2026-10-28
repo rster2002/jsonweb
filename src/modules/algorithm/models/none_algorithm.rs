@@ -7,7 +7,7 @@ pub struct NoneAlgorithm;
 impl JwAlgVerify for NoneAlgorithm {
     type Error = Infallible;
 
-    fn verify(&self, _: &str, _: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, _: &[u8], _: &[u8]) -> Result<bool, Self::Error> {
         Ok(true)
     }
 }

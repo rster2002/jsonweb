@@ -49,11 +49,14 @@ where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
 {
     type Error = Infallible;
 
-    fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
         let verifying_key = self.verifying_key();
-        let signature = Signature::<C>::try_from(signature).unwrap(); // TODO return false
+        let signature = match Signature::<C>::try_from(signature) {
+            Ok(sig) => sig,
+            Err(_) => return Ok(false),
+        };
 
-        Ok(verifying_key.verify(payload.as_bytes(), &signature).is_ok())
+        Ok(verifying_key.verify(payload, &signature).is_ok())
     }
 }
 
@@ -63,8 +66,8 @@ where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
       AffinePoint<C>: VerifyPrimitive<C>,
       SignatureSize<C>: ArrayLength<u8>,
 {
-    fn sign(&self, payload: &str) -> Vec<u8> {
-        let signature: Signature<C> = Signer::sign(self, payload.as_bytes());
+    fn sign(&self, payload: &[u8]) -> Vec<u8> {
+        let signature: Signature<C> = Signer::sign(self, payload);
         signature.to_vec()
     }
 }

@@ -18,12 +18,6 @@ impl JwAlg for ES256Private {
     }
 }
 
-impl PartialJwAlg for ES256Private {
-    fn partial_alg() -> Option<impl AsRef<str>> {
-        Some(Self::alg())
-    }
-}
-
 impl JwkPrivateParams<'_> for ES256Private {
     type PrivateParams = ESPrivateParams;
 
@@ -51,12 +45,6 @@ pub type ES256Public = ESPublic<p256::NistP256>;
 impl JwAlg for ES256Public {
     fn alg() -> impl AsRef<str> {
         "ES256"
-    }
-}
-
-impl PartialJwAlg for ES256Public {
-    fn partial_alg() -> Option<impl AsRef<str>> {
-        Some(Self::alg())
     }
 }
 

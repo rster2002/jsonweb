@@ -68,9 +68,9 @@ where D: CoreProxy,
 {
     type Error = Infallible;
 
-    fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
         let mut inner = self.0.clone();
-        inner.update(payload.as_bytes());
+        inner.update(payload);
 
         let finalized = inner.finalize()
             .into_bytes()
@@ -125,10 +125,10 @@ mod tests {
 
     #[test]
     fn hs256_algorithm_works_as_expected() {
-        let payload = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoaiI6dHJ1ZX0";
+        let payload = b"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoaiI6dHJ1ZX0";
         let alg = HS256Private::new("qwed".as_ref()).unwrap();
 
-        let signature_bytes = alg.sign(payload.as_bytes());
+        let signature_bytes = alg.sign(payload);
         let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature_bytes);
 
         assert_eq!(signature_string, "AeQU9YyCnBlrJwtd1PVmGW3apn6kQ6yi_U4qT9o0vkQ");

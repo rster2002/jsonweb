@@ -12,8 +12,8 @@ where D : Digest
 {
     type Error = rsa::signature::Error;
 
-    fn verify(&self, payload: &str, signature: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
         let signature = Signature::try_from(signature)?;
-        Ok(self.0.verify(payload.as_bytes(), &signature).is_ok())
+        Ok(self.0.verify(payload, &signature).is_ok())
     }
 }

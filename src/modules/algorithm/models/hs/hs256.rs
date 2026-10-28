@@ -10,8 +10,8 @@ impl JwAlg for HS256Private {
     }
 }
 
-impl PartialJwAlg for HS256Private {
-    fn partial_alg() -> Option<impl AsRef<str>> {
-        Some(Self::alg())
-    }
-}
+// impl PartialJwAlg for HS256Private {
+//     fn partial_alg() -> Option<impl AsRef<str>> {
+//         Some(Self::alg())
+//     }
+// }
