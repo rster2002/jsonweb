@@ -8,5 +8,3 @@ pub mod rs;
 
 #[cfg(any(feature = "es256", feature = "es384"))]
 pub mod es;
-pub mod any;
-pub mod verifier_set;

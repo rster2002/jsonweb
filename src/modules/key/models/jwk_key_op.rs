@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum JwtKeyOp {
+pub enum JwkKeyOp {
     #[serde(rename = "sign")]
     Sign,
 
@@ -25,7 +25,7 @@ pub enum JwtKeyOp {
 
     #[serde(rename = "deriveBits")]
     DeriveBits,
-    
+
     #[serde(untagged)]
     Other(String),
 }

@@ -4,11 +4,11 @@ use crate::modules::key::error::JwkError;
 use crate::modules::key::models::jwk::Jwk;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct JwtSet {
+pub struct JwkSet {
     pub keys: Vec<Jwk>,
 }
 
-impl JwAlgVerify for JwtSet {
+impl JwAlgVerify for JwkSet {
     type Error = JwkError;
 
     fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {

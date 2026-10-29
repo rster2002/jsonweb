@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum JwtUse {
+pub enum JwkUse {
     #[serde(rename = "sig")]
     Signature,
 
