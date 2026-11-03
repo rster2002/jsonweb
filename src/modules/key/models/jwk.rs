@@ -21,6 +21,9 @@ pub struct Jwk {
 
     #[serde(rename = "x5t#S256")]
     pub x5t_s256: Option<String>,
+
+    #[serde(flatten)]
+    pub parameters: Value,
 }
 
 impl TryFrom<Value> for Jwk {
@@ -34,6 +37,7 @@ impl TryFrom<Value> for Jwk {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
+    use crate::modules::key::Jwk;
 
     #[test]
     fn scratch() {
@@ -45,5 +49,8 @@ mod tests {
             "n": "48Gy0BgJlyeqtOaFTF9eJhWo-51pryRma7hGuqz3zz8_IOxWMQU2aEiIaRlUozIu3thqowByO4bBD5M0Hc9PuPGJy75hxlCc7J4JMxBw5_SK3r2-cBm2s1Jex2jUqK6-Omau22eA0F97w3Op6ISXAMN3AhqJ4ZgNJQw9Kn3rDBTdr6on62eY3NXmcsh9HseS0YECqDyDr0O_HlUfz8NpLlLZUEAhnJxbcBU6napsyM2uoBq8x4Im98o5jyYfUM3xhlaVCaNVuxHKxc7TkFH8Cnv0-JRbjPZGeWHk78rQ-56h2CcYII5j63FEN6V0evcSIfg3ICxRqf0eaxbOiqAg1Q",
             "use": "sig"
         });
+
+        let jwk = Jwk::try_from(public_key).unwrap();
+        dbg!(jwk);
     }
 }
