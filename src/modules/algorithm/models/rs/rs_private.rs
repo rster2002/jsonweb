@@ -125,6 +125,7 @@ where D: Digest + AssociatedOid,
 
 #[cfg(test)]
 mod tests {
+    use crate::algorithm::rs::RS256Private;
     use crate::algorithm::rs::rs_private::RSPrivate;
     use crate::algorithm::rs::rs_private_params::RSPrivateParams;
 
@@ -141,13 +142,13 @@ mod tests {
             qi: String::from("GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rxyR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU")
         };
 
-        let key = RSPrivate::try_from(private_components)
+        let key = RS256Private::try_from(private_components)
             .unwrap();
     }
 }
 
 #[cfg(all(test, feature = "pkcs1"))]
-mod tests {
+mod tests2 {
     use crate::algorithm::{JwAlgSign, JwAlgVerify};
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use base64::Engine;
@@ -157,7 +158,7 @@ mod tests {
 
     #[test]
     fn rs256_algorithm_works_as_expected() {
-        let payload = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJoaiI6dHJ1ZX0";
+        let payload = b"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJoaiI6dHJ1ZX0";
 
         let private_key = RsaPrivateKey::from_pkcs1_pem(include_str!("../../../../../test-files/rs256.key")).unwrap();
         let alg = RS256Private::from(private_key);
