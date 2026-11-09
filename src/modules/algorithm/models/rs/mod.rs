@@ -1,7 +1,10 @@
+mod error;
 pub mod rs_public;
 pub mod rs_private;
 pub mod rs_private_params;
 pub mod rs_public_params;
+
+pub use error::RSError;
 
 #[cfg(feature = "rs256")]
 mod rs256;

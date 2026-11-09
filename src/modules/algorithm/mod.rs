@@ -1,6 +1,5 @@
 mod models;
 mod traits;
-mod algorithms;
 
 pub use traits::jw_alg_verify::JwAlgVerify;
 pub use traits::jw_alg_sign::JwAlgSign;

@@ -3,27 +3,30 @@ use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use const_oid::AssociatedOid;
 use digest::Digest;
-use rsa::signature::{SignatureEncoding, Signer};
 use std::marker::PhantomData;
 
 use crate::algorithm::rs::rs_private_params::RSPrivateParams;
 use crate::modules::key::JwkPrivateParams;
-use rsa::pkcs1::EncodeRsaPrivateKey;
-#[cfg(feature = "pkcs1")]
-use rsa::{Pkcs1v15Sign, PrivateKey};
 use rsa::BoxedUint;
+use rsa::PrivateKey;
+
+use crate::algorithm::rs::error::RSError;
+#[cfg(feature = "pkcs1")]
+use rsa::pkcs1::EncodeRsaPrivateKey;
+use rsa::traits::{PrivateKeyParts, PublicKeyParts};
 
 #[derive(Debug, Clone)]
 pub struct RSPrivate<D>
 where
     D: Digest + AssociatedOid,
 {
-    private_key: PrivateKey,
+    pub(crate) private_key: PrivateKey,
     _p: PhantomData<D>,
 }
 
 impl<D> RSPrivate<D>
-where D: Digest + AssociatedOid,
+where
+    D: Digest + AssociatedOid,
 {
     // /// Create a new RSA private key using the default size of 4096 bits.
     // #[cfg(feature = "rand")]
@@ -40,9 +43,7 @@ where D: Digest + AssociatedOid,
 
     #[cfg(feature = "pkcs1")]
     pub fn to_pkcs1_der_bytes(&self) -> Result<Vec<u8>, rsa::Error> {
-        Ok(self.private_key.to_pkcs1_der()?
-            .to_bytes()
-            .to_vec())
+        Ok(self.private_key.to_pkcs1_der()?.to_bytes().to_vec())
     }
 
     // #[cfg(feature = "pkcs1")]
@@ -52,23 +53,34 @@ where D: Digest + AssociatedOid,
 }
 
 impl<D> JwAlgVerify for RSPrivate<D>
-where D: Digest + AssociatedOid,
+where
+    D: Digest + AssociatedOid,
 {
-    type Error = rsa::signature::Error;
+    type Error = RSError;
 
-    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, RSError> {
         let public_key = self.private_key.as_public_key();
-        Ok(public_key.pkcs1v15_verify::<D>(payload, signature).is_ok())
+
+        match public_key.pkcs1v15_verify::<D>(payload, signature) {
+            Ok(()) => Ok(true),
+            Err(rsa::Error::Verification) => Ok(false),
+            Err(error) => Err(RSError::FailedToVerify(error)),
+        }
     }
 }
 
 impl<D> JwAlgSign for RSPrivate<D>
-where D: Digest + AssociatedOid,
+where
+    D: Digest + AssociatedOid,
 {
-    type Error = rsa::Error;
-    
-    fn sign(&self, payload: &[u8]) -> Result<Vec<u8>, rsa::Error> {
-        Ok(self.private_key.pkcs1v15_sign::<D>(payload)?.to_vec())
+    type Error = RSError;
+
+    fn sign(&self, payload: &[u8]) -> Result<Vec<u8>, RSError> {
+        Ok(self
+            .private_key
+            .pkcs1v15_sign::<D>(payload)
+            .map_err(|e| RSError::FailedToSign(e))?
+            .to_vec())
     }
 }
 
@@ -76,32 +88,82 @@ impl<D> TryFrom<RSPrivateParams> for RSPrivate<D>
 where
     D: AssociatedOid + Digest,
 {
-    type Error = ();
+    type Error = RSError;
 
-    fn try_from(value: RSPrivateParams) -> Result<Self, Self::Error> {
-        let n = BASE64_URL_SAFE_NO_PAD.decode(value.n)
-            .unwrap();
+    fn try_from(value: RSPrivateParams) -> Result<Self, RSError> {
+        let n = BASE64_URL_SAFE_NO_PAD
+            .decode(value.n)
+            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
+            .map_err(|e| RSError::FailedToBase64DecodeN(e))?
+            .map_err(|e| RSError::FailedToRepresentN(rsa::Error::Decode(e)))?;
 
-        let size = (n.len() / 2) * 8;
+        let p = BASE64_URL_SAFE_NO_PAD
+            .decode(value.p)
+            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
+            .map_err(|e| RSError::FailedToBase64DecodeP(e))?
+            .map_err(|e| RSError::FailedToRepresentP(rsa::Error::Decode(e)))?;
 
-        let p = BASE64_URL_SAFE_NO_PAD.decode(value.p)
-            .unwrap();
+        let q = BASE64_URL_SAFE_NO_PAD
+            .decode(value.q)
+            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
+            .map_err(|e| RSError::FailedToBase64DecodeQ(e))?
+            .map_err(|e| RSError::FailedToRepresentQ(rsa::Error::Decode(e)))?;
 
-        let q = BASE64_URL_SAFE_NO_PAD.decode(value.q)
-            .unwrap();
+        let e = BASE64_URL_SAFE_NO_PAD
+            .decode(value.e)
+            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
+            .map_err(|e| RSError::FailedToBase64DecodeE(e))?
+            .map_err(|e| RSError::FailedToRepresentE(rsa::Error::Decode(e)))?;
 
-        let e = BASE64_URL_SAFE_NO_PAD.decode(value.e)
-            .unwrap();
+        let dp = BASE64_URL_SAFE_NO_PAD
+            .decode(value.dp)
+            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
+            .map_err(|e| RSError::FailedToBase64DecodeDP(e))?
+            .map_err(|e| RSError::FailedToRepresentDP(rsa::Error::Decode(e)))?;
 
-        let private_key = PrivateKey::from_p_q(
-            BoxedUint::from_be_slice(&p, size as u32).unwrap(),
-            BoxedUint::from_be_slice(&q, size as u32).unwrap(),
-            BoxedUint::from_be_slice(&e, size as u32).unwrap(),
-        )
-            .unwrap();
+        let dq = BASE64_URL_SAFE_NO_PAD
+            .decode(value.dq)
+            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
+            .map_err(|e| RSError::FailedToBase64DecodeDQ(e))?
+            .map_err(|e| RSError::FailedToRepresentDQ(rsa::Error::Decode(e)))?;
+
+        let qi = BASE64_URL_SAFE_NO_PAD
+            .decode(value.qi)
+            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
+            .map_err(|e| RSError::FailedToBase64DecodeQI(e))?
+            .map_err(|e| RSError::FailedToRepresentQI(rsa::Error::Decode(e)))?;
+
+        let mut private_key = PrivateKey::from_p_q(p, q, e)
+            .map_err(|e| RSError::FailedToCreateKeyFromParameters(e))?;
+
+        private_key.precompute()
+            .map_err(|e| RSError::FailedToPrecompute(e))?;
+
+        if n != private_key.n().as_ref() {
+            return Err(RSError::MismatchedN);
+        }
+
+        if dp != private_key.dp().expect("Should be precomputed") {
+            return Err(RSError::MismatchedDP);
+        }
+
+        if dq != private_key.dq().expect("Should be precomputed") {
+            return Err(RSError::MismatchedDQ);
+        }
+
+        if qi != private_key.crt_coefficient().expect("Should be precomputed") {
+            return Err(RSError::MismatchedQI);
+        }
 
         Ok(Self::from(private_key))
     }
+}
+
+impl<D> JwkPrivateParams for RSPrivate<D>
+where
+    D: Digest + AssociatedOid,
+{
+    type PrivateParams = RSPrivateParams;
 }
 
 impl<D> Into<RSPrivateParams> for RSPrivate<D>
@@ -113,14 +175,9 @@ where
     }
 }
 
-impl<D> JwkPrivateParams for RSPrivate<D>
-where D: Digest + AssociatedOid,
-{
-    type PrivateParams = RSPrivateParams;
-}
-
 impl<D> From<PrivateKey> for RSPrivate<D>
-where D: Digest + AssociatedOid,
+where
+    D: Digest + AssociatedOid,
 {
     fn from(key: PrivateKey) -> Self {
         Self {
@@ -132,25 +189,47 @@ where D: Digest + AssociatedOid,
 
 #[cfg(test)]
 mod tests {
+    use crate::algorithm::JwAlgSign;
     use crate::algorithm::rs::RS256Private;
     use crate::algorithm::rs::rs_private_params::RSPrivateParams;
 
+    fn rfc_7517_a_2_rsa_params() -> RSPrivateParams {
+        // https://www.rfc-editor.org/info/rfc7517/#appendix-A.2
+        RSPrivateParams {
+            n: String::from(
+                "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
+            ),
+            e: String::from("AQAB"),
+            d: String::from(
+                "X4cTteJY_gn4FYPsXB8rdXix5vwsg1FLN5E3EaG6RJoVH-HLLKD9M7dx5oo7GURknchnrRweUkC7hT5fJLM0WbFAKNLWY2vv7B6NqXSzUvxT0_YSfqijwp3RTzlBaCxWp4doFk5N2o8Gy_nHNKroADIkJ46pRUohsXywbReAdYaMwFs9tv8d_cPVY3i07a3t8MN6TNwm0dSawm9v47UiCl3Sk5ZiG7xojPLu4sbg1U2jx4IBTNBznbJSzFHK66jT8bgkuqsk0GjskDJk19Z4qwjwbsnn4j2WBii3RL-Us2lGVkY8fkFzme1z0HbIkfz0Y6mqnOYtqc0X4jfcKoAC8Q",
+            ),
+            p: String::from(
+                "83i-7IvMGXoMXCskv73TKr8637FiO7Z27zv8oj6pbWUQyLPQBQxtPVnwD20R-60eTDmD2ujnMt5PoqMrm8RfmNhVWDtjjMmCMjOpSXicFHj7XOuVIYQyqVWlWEh6dN36GVZYk93N8Bc9vY41xy8B9RzzOGVQzXvNEvn7O0nVbfs",
+            ),
+            q: String::from(
+                "3dfOR9cuYq-0S-mkFLzgItgMEfFzB2q3hWehMuG0oCuqnb3vobLyumqjVZQO1dIrdwgTnCdpYzBcOfW5r370AFXjiWft_NGEiovonizhKpo9VVS78TzFgxkIdrecRezsZ-1kYd_s1qDbxtkDEgfAITAG9LUnADun4vIcb6yelxk",
+            ),
+            dp: String::from(
+                "G4sPXkc6Ya9y8oJW9_ILj4xuppu0lzi_H7VTkS8xj5SdX3coE0oimYwxIi2emTAue0UOa5dpgFGyBJ4c8tQ2VF402XRugKDTP8akYhFo5tAA77Qe_NmtuYZc3C3m3I24G2GvR5sSDxUyAN2zq8Lfn9EUms6rY3Ob8YeiKkTiBj0",
+            ),
+            dq: String::from(
+                "s9lAH9fggBsoFR8Oac2R_E2gw282rT2kGOAhvIllETE1efrA6huUUvMfBcMpn8lqeW6vzznYY5SSQF7pMdC_agI3nG8Ibp1BUb0JUiraRNqUfLhcQb_d9GF4Dh7e74WbRsobRonujTYN1xCaP6TO61jvWrX-L18txXw494Q_cgk",
+            ),
+            qi: String::from(
+                "GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rxyR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU",
+            ),
+        }
+    }
+
     #[test]
     fn rs_private_key_can_be_deserialized_from_jwk_params() {
-        let private_components = RSPrivateParams {
-            n: String::from("0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw"),
-            e: String::from("AQAB"),
-            d: String::from("X4cTteJY_gn4FYPsXB8rdXix5vwsg1FLN5E3EaG6RJoVH-HLLKD9M7dx5oo7GURknchnrRweUkC7hT5fJLM0WbFAKNLWY2vv7B6NqXSzUvxT0_YSfqijwp3RTzlBaCxWp4doFk5N2o8Gy_nHNKroADIkJ46pRUohsXywbReAdYaMwFs9tv8d_cPVY3i07a3t8MN6TNwm0dSawm9v47UiCl3Sk5ZiG7xojPLu4sbg1U2jx4IBTNBznbJSzFHK66jT8bgkuqsk0GjskDJk19Z4qwjwbsnn4j2WBii3RL-Us2lGVkY8fkFzme1z0HbIkfz0Y6mqnOYtqc0X4jfcKoAC8Q"),
-            p: String::from("83i-7IvMGXoMXCskv73TKr8637FiO7Z27zv8oj6pbWUQyLPQBQxtPVnwD20R-60eTDmD2ujnMt5PoqMrm8RfmNhVWDtjjMmCMjOpSXicFHj7XOuVIYQyqVWlWEh6dN36GVZYk93N8Bc9vY41xy8B9RzzOGVQzXvNEvn7O0nVbfs"),
-            q: String::from("3dfOR9cuYq-0S-mkFLzgItgMEfFzB2q3hWehMuG0oCuqnb3vobLyumqjVZQO1dIrdwgTnCdpYzBcOfW5r370AFXjiWft_NGEiovonizhKpo9VVS78TzFgxkIdrecRezsZ-1kYd_s1qDbxtkDEgfAITAG9LUnADun4vIcb6yelxk"),
-            dp: String::from("G4sPXkc6Ya9y8oJW9_ILj4xuppu0lzi_H7VTkS8xj5SdX3coE0oimYwxIi2emTAue0UOa5dpgFGyBJ4c8tQ2VF402XRugKDTP8akYhFo5tAA77Qe_NmtuYZc3C3m3I24G2GvR5sSDxUyAN2zq8Lfn9EUms6rY3Ob8YeiKkTiBj0"),
-            dq: String::from("s9lAH9fggBsoFR8Oac2R_E2gw282rT2kGOAhvIllETE1efrA6huUUvMfBcMpn8lqeW6vzznYY5SSQF7pMdC_agI3nG8Ibp1BUb0JUiraRNqUfLhcQb_d9GF4Dh7e74WbRsobRonujTYN1xCaP6TO61jvWrX-L18txXw494Q_cgk"),
-            qi: String::from("GyM_p6JrXySiz1toFgKbWV-JdI3jQ4ypu9rbMWx3rQJBfmt0FoYzgUIZEVFEcOqwemRN81zoDAaa-Bk0KWNGDjJHZDdDmFhW3AN7lI-puxk_mHZGJ11rxyR8O55XLSe3SPmRfKwZI6yU24ZxvQKFYItdldUKGzO6Ia6zTKhAVRU")
-        };
+        let private_components = rfc_7517_a_2_rsa_params();
 
-        let key = RS256Private::try_from(private_components)
-            .unwrap();
+        let key = RS256Private::try_from(private_components).unwrap();
+        let _ = key.sign(b"something").unwrap();
     }
+
+    // TODO malformed key check tests.
 }
 
 // #[cfg(all(test, feature = "pkcs1"))]
