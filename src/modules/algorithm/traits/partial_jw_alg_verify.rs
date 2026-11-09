@@ -1,8 +1,11 @@
 use crate::algorithm::{JwAlg, JwAlgVerify};
 
+/// Trait for algorithms that can potentially verify a signature of the given `alg`.
 pub trait PartialJwAlgVerify {
     type Error: std::error::Error;
 
+    /// Returns `Some` result if the algorithm was handled by this algorithm, or `None` if it could
+    /// not be processed.
     fn partial_verify(&self, alg: &str, payload: &[u8], signature: &[u8]) -> Option<Result<bool, Self::Error>>;
 }
 

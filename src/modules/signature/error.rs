@@ -4,7 +4,9 @@ use thiserror::Error;
 #[error(transparent)]
 pub enum JwsError {
     SerdeJson(#[from] serde_json::Error),
-    AlgError(Box<dyn std::error::Error>),
+
+    #[error("{0}")]
+    AlgError(String),
 
     #[error("No header found when verifying compact JWS")]
     NoHeader,

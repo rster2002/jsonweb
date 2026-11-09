@@ -66,9 +66,11 @@ where C: PrimeCurve + CurveArithmetic + DigestPrimitive,
       AffinePoint<C>: VerifyPrimitive<C>,
       SignatureSize<C>: ArrayLength<u8>,
 {
-    fn sign(&self, payload: &[u8]) -> Vec<u8> {
+    type Error = Infallible;
+
+    fn sign(&self, payload: &[u8]) -> Result<Vec<u8>, Infallible> {
         let signature: Signature<C> = Signer::sign(self, payload);
-        signature.to_vec()
+        Ok(signature.to_vec())
     }
 }
 

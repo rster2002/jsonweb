@@ -19,7 +19,8 @@ where
     let content_string = BASE64_URL_SAFE_NO_PAD.encode(payload);
     let target = format!("{}.{}", header_string, content_string);
 
-    let signature_bytes = algorithm.sign(target.as_bytes());
+    let signature_bytes = algorithm.sign(target.as_bytes())
+        .map_err(|e| JwsError::AlgError(e.to_string()))?;
     let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature_bytes);
 
     Ok(format!("{}.{}", target, signature_string))

@@ -53,7 +53,8 @@ where T : Serialize + for<'a> Deserialize<'a>,
         let payload_string = BASE64_URL_SAFE_NO_PAD.encode(&bytes);
 
         let target = format!("{}.{}", header_string, payload_string);
-        let signature = algorithm.sign(target.as_bytes());
+        let signature = algorithm.sign(target.as_bytes())
+            .map_err(|e| JwtError::Inner(e.to_string()))?;
 
         let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature);
 
@@ -64,9 +65,7 @@ where T : Serialize + for<'a> Deserialize<'a>,
     /// instance with the expected payload. Note that this does not check any claims. To verify
     /// basic expiry claims, you can use [Jwt::verify_now] or you can further verify the token using
     /// [Jwt::against] or [Jwt::guard].
-    pub fn check<A: PartialJwAlg + PartialJwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
-    where <A as PartialJwAlgVerify>::Error: 'static
-    {
+    pub fn check<A: PartialJwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError> {
         let payload_bytes = verify_compact(
             token,
             algorithm,
@@ -87,7 +86,6 @@ where T : Serialize + for<'a> Deserialize<'a>,
     /// Largely the same as [Jwt::check], but also verifies basic expiry claims. You can further
     /// verify the token using [Jwt::against] or [Jwt::guard].
     pub fn verify_now<A: JwAlg + JwAlgVerify>(token: &str, algorithm: &A) -> Result<Jwt<T>, JwtError>
-    where <A as JwAlgVerify>::Error: 'static
     {
         let jwt = Jwt::<T>::check(token, algorithm)?
             .against(&JwtClaims::now())?;

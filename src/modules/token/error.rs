@@ -9,6 +9,9 @@ pub enum JwtError {
     AlgError(Box<dyn std::error::Error>),
     JwsError(#[from] JwsError),
 
+    #[error("{0}")]
+    Inner(String),
+
     #[error("When setting claims, the payload must serialize to a JSON object")]
     PayloadNotAnObject,
 

@@ -13,7 +13,9 @@ impl JwAlgVerify for NoneAlgorithm {
 }
 
 impl JwAlgSign for NoneAlgorithm {
-    fn sign(&self, _: &[u8]) -> Vec<u8> {
-        vec![]
+    type Error = Infallible;
+
+    fn sign(&self, _: &[u8]) -> Result<Vec<u8>, Infallible> {
+        Ok(vec![])
     }
 }

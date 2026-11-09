@@ -6,8 +6,7 @@ use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 
 pub fn verify_compact<A>(signature: &str, algorithm: &A) -> Result<Vec<u8>, JwsError>
 where
-    A: PartialJwAlg + PartialJwAlgVerify,
-    <A as PartialJwAlgVerify>::Error: 'static,
+    A: PartialJwAlgVerify
 {
     let mut parts = signature.splitn(3, '.');
     let header_string = parts.next().ok_or(JwsError::NoHeader)?;
@@ -31,7 +30,7 @@ where
     let target = format!("{}.{}", header_string, payload_string);
     match algorithm.partial_verify(&header_alg, target.as_bytes(), &signature_bytes) {
         None => Err(JwsError::UnmatchedAlgorithm),
-        Some(Err(error)) => Err(JwsError::AlgError(Box::new(error))),
+        Some(Err(error)) => Err(JwsError::AlgError(error.to_string())),
         Some(Ok(false)) => Err(JwsError::InvalidSignature),
         Some(Ok(true)) => Ok(payload_bytes)
     }
