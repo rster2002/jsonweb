@@ -27,6 +27,7 @@ pub struct Jwk {
 }
 
 impl Jwk {
+    /// Attempt to turn the JWK into a private algorithm to use.
     pub fn to_private<A>(self) -> Result<A, JwkError>
     where A : JwAlg + JwkPrivateParams,
     {

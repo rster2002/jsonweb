@@ -1,7 +1,6 @@
-use serde::{Deserialize, Serialize};
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 
-pub trait JwkPublicParams<'a> {
-    type PublicParams: Serialize + Deserialize<'a>;
-
-    fn get_public_params(&self) -> Option<Self::PublicParams>;
+pub trait JwkPublicParams: TryFrom<Self::PublicParams> + TryInto<Self::PublicParams> {
+    type PublicParams: Serialize + DeserializeOwned;
 }

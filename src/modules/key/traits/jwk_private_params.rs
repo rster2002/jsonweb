@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
 use serde::de::DeserializeOwned;
+use serde::Serialize;
 
-pub trait JwkPrivateParams: TryFrom<Self::PrivateParams> + Into<Self::PrivateParams> {
+pub trait JwkPrivateParams: TryFrom<Self::PrivateParams> + TryInto<Self::PrivateParams> {
     type PrivateParams: Serialize + DeserializeOwned;
 }

@@ -24,19 +24,3 @@ impl JwAlg for RS256Public {
         "RS256"
     }
 }
-
-impl JwkPublicParams<'_> for RS256Public {
-    type PublicParams = RSPublicParams;
-
-    fn get_public_params(&self) -> Option<Self::PublicParams> {
-        todo!()
-        // let public_key = self.0.as_ref();
-        // let n = public_key.n().to_bytes_be();
-        // let e = public_key.e().to_bytes_be();
-        //
-        // Some(RSPublicParams {
-        //     n: BASE64_URL_SAFE_NO_PAD.encode(&n),
-        //     e: BASE64_URL_SAFE_NO_PAD.encode(&e),
-        // })
-    }
-}

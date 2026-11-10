@@ -50,11 +50,17 @@ pub enum RSError {
     #[error("Failed to represent `qi`")]
     FailedToRepresentQI(#[source] rsa::Error),
 
-    #[error("Failed to create key from parameters: {0}")]
-    FailedToCreateKeyFromParameters(#[source] rsa::Error),
+    #[error("Failed to create private key from parameters: {0}")]
+    FailedToCreatePrivateKeyFromParameters(#[source] rsa::Error),
+
+    #[error("Failed to create public key from parameters: {0}")]
+    FailedToCreatePublicKeyFromParameters(#[source] rsa::Error),
     
     #[error("Failed to precompute: {0}")]
     FailedToPrecompute(#[source] rsa::Error),
+
+    #[error("Missing precompute")]
+    MissingPrecompute,
     
     #[error("Mismatched `n`")]
     MismatchedN,

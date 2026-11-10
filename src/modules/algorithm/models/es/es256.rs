@@ -48,22 +48,22 @@ impl JwAlg for ES256Public {
     }
 }
 
-impl JwkPublicParams<'_> for ES256Public {
-    type PublicParams = ESPublicParams;
-
-    fn get_public_params(&self) -> Option<Self::PublicParams> {
-        let affine_point = self.0.as_affine();
-        let encoded_point: EncodedPoint<p256::NistP256> = affine_point.clone().into(); // TODO remove clone
-        let x = encoded_point.x()?;
-        let y = encoded_point.y()?;
-
-        Some(ESPublicParams {
-            crv: ESCurve::P256,
-            x: BASE64_URL_SAFE_NO_PAD.encode(&x),
-            y: BASE64_URL_SAFE_NO_PAD.encode(&y),
-        })
-    }
-}
+// impl JwkPublicParams<'_> for ES256Public {
+//     type PublicParams = ESPublicParams;
+//
+//     fn get_public_params(&self) -> Option<Self::PublicParams> {
+//         let affine_point = self.0.as_affine();
+//         let encoded_point: EncodedPoint<p256::NistP256> = affine_point.clone().into(); // TODO remove clone
+//         let x = encoded_point.x()?;
+//         let y = encoded_point.y()?;
+//
+//         Some(ESPublicParams {
+//             crv: ESCurve::P256,
+//             x: BASE64_URL_SAFE_NO_PAD.encode(&x),
+//             y: BASE64_URL_SAFE_NO_PAD.encode(&y),
+//         })
+//     }
+// }
 
 impl From<ES256Private> for ES256Public {
     fn from(value: ES256Private) -> Self {

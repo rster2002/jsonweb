@@ -1,14 +1,14 @@
+use crate::algorithm::rs::rs_private_params::RSPrivateParams;
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
+use crate::modules::key::JwkPrivateParams;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use const_oid::AssociatedOid;
 use digest::Digest;
-use std::marker::PhantomData;
-
-use crate::algorithm::rs::rs_private_params::RSPrivateParams;
-use crate::modules::key::JwkPrivateParams;
 use rsa::BoxedUint;
 use rsa::PrivateKey;
+use std::marker::PhantomData;
+use std::ops::Deref;
 
 use crate::algorithm::rs::error::RSError;
 #[cfg(feature = "pkcs1")]
@@ -41,10 +41,10 @@ where
     //     // Ok(RSPrivate::from(SigningKey::random(&mut rng, size)?))
     // }
 
-    #[cfg(feature = "pkcs1")]
-    pub fn to_pkcs1_der_bytes(&self) -> Result<Vec<u8>, rsa::Error> {
-        Ok(self.private_key.to_pkcs1_der()?.to_bytes().to_vec())
-    }
+    // #[cfg(feature = "pkcs1")]
+    // pub fn to_pkcs1_der_bytes(&self) -> Result<Vec<u8>, rsa::Error> {
+    //     Ok(self.private_key.to_pkcs1_der()?.to_bytes().to_vec())
+    // }
 
     // #[cfg(feature = "pkcs1")]
     // pub fn from_pkcs1_der_bytes(bytes: &[u8]) -> Result<Self, rsa::Error> {
@@ -82,6 +82,13 @@ where
             .map_err(|e| RSError::FailedToSign(e))?
             .to_vec())
     }
+}
+
+impl<D> JwkPrivateParams for RSPrivate<D>
+where
+    D: Digest + AssociatedOid,
+{
+    type PrivateParams = RSPrivateParams;
 }
 
 impl<D> TryFrom<RSPrivateParams> for RSPrivate<D>
@@ -134,24 +141,29 @@ where
             .map_err(|e| RSError::FailedToRepresentQI(rsa::Error::Decode(e)))?;
 
         let mut private_key = PrivateKey::from_p_q(p, q, e)
-            .map_err(|e| RSError::FailedToCreateKeyFromParameters(e))?;
+            .map_err(|e| RSError::FailedToCreatePrivateKeyFromParameters(e))?;
 
-        private_key.precompute()
+        private_key
+            .precompute()
             .map_err(|e| RSError::FailedToPrecompute(e))?;
 
         if n != private_key.n().as_ref() {
             return Err(RSError::MismatchedN);
         }
 
-        if dp != private_key.dp().expect("Should be precomputed") {
+        if dp != private_key.dp().ok_or(RSError::MissingPrecompute)? {
             return Err(RSError::MismatchedDP);
         }
 
-        if dq != private_key.dq().expect("Should be precomputed") {
+        if dq != private_key.dq().ok_or(RSError::MissingPrecompute)? {
             return Err(RSError::MismatchedDQ);
         }
 
-        if qi != private_key.crt_coefficient().expect("Should be precomputed") {
+        if qi
+            != private_key
+                .crt_coefficient()
+                .ok_or(RSError::MissingPrecompute)?
+        {
             return Err(RSError::MismatchedQI);
         }
 
@@ -159,19 +171,67 @@ where
     }
 }
 
-impl<D> JwkPrivateParams for RSPrivate<D>
-where
-    D: Digest + AssociatedOid,
-{
-    type PrivateParams = RSPrivateParams;
-}
-
-impl<D> Into<RSPrivateParams> for RSPrivate<D>
+impl<D> TryInto<RSPrivateParams> for RSPrivate<D>
 where
     D: AssociatedOid + Digest,
 {
-    fn into(self) -> RSPrivateParams {
-        todo!()
+    type Error = RSError;
+
+    fn try_into(mut self) -> Result<RSPrivateParams, RSError> {
+        self.private_key
+            .precompute()
+            .map_err(|e| RSError::FailedToPrecompute(e))?;
+
+        let n = BASE64_URL_SAFE_NO_PAD.encode(self.private_key.n_bytes());
+        let e = BASE64_URL_SAFE_NO_PAD.encode(self.private_key.e_bytes());
+        let d = BASE64_URL_SAFE_NO_PAD.encode(self.private_key.d().to_be_bytes());
+        let p = BASE64_URL_SAFE_NO_PAD.encode(
+            self.private_key
+                .p()
+                .ok_or(RSError::MissingPrecompute)?
+                .modulus()
+                .to_be_bytes(),
+        );
+
+        let q = BASE64_URL_SAFE_NO_PAD.encode(
+            self.private_key
+                .q()
+                .ok_or(RSError::MissingPrecompute)?
+                .modulus()
+                .to_be_bytes(),
+        );
+
+        let dp = BASE64_URL_SAFE_NO_PAD.encode(
+            self.private_key
+                .dp()
+                .ok_or(RSError::MissingPrecompute)?
+                .to_be_bytes(),
+        );
+
+        let dq = BASE64_URL_SAFE_NO_PAD.encode(
+            self.private_key
+                .dq()
+                .ok_or(RSError::MissingPrecompute)?
+                .to_be_bytes(),
+        );
+
+        let qi = BASE64_URL_SAFE_NO_PAD.encode(
+            self.private_key
+                .crt_coefficient()
+                .ok_or(RSError::MissingPrecompute)?
+                .to_be_bytes(),
+        );
+
+        Ok(RSPrivateParams {
+            n,
+            e,
+            d,
+            p,
+            q,
+            dp,
+            dq,
+            qi,
+        })
     }
 }
 
@@ -189,9 +249,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::JwAlgSign;
     use crate::algorithm::rs::RS256Private;
     use crate::algorithm::rs::rs_private_params::RSPrivateParams;
+    use crate::algorithm::{JwAlgSign, JwAlgVerify};
 
     fn rfc_7517_a_2_rsa_params() -> RSPrivateParams {
         // https://www.rfc-editor.org/info/rfc7517/#appendix-A.2
@@ -226,7 +286,19 @@ mod tests {
         let private_components = rfc_7517_a_2_rsa_params();
 
         let key = RS256Private::try_from(private_components).unwrap();
-        let _ = key.sign(b"something").unwrap();
+        let signature = key.sign(b"something").unwrap();
+
+        key.verify(b"something", &signature).unwrap();
+    }
+
+    #[test]
+    fn rs_private_key_can_be_serialized_to_jwk_params() {
+        let private_components = rfc_7517_a_2_rsa_params();
+
+        let key = RS256Private::try_from(private_components).unwrap();
+        let jwk_params: RSPrivateParams = key.try_into().unwrap();
+
+        assert_eq!(rfc_7517_a_2_rsa_params(), jwk_params);
     }
 
     // TODO malformed key check tests.
