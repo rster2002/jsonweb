@@ -1,8 +1,13 @@
 mod error;
-pub mod rs_public;
-pub mod rs_private;
-pub mod rs_private_params;
-pub mod rs_public_params;
+mod rs_public;
+mod rs_private;
+mod rs_private_params;
+mod rs_public_params;
+
+pub use rs_public::RSPublic;
+pub use rs_private::RSPrivate;
+pub use rs_private_params::RSPrivateParams;
+pub use rs_public_params::RSPublicParams;
 
 pub use error::RSError;
 
