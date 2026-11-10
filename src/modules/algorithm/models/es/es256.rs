@@ -1,13 +1,6 @@
-use base64::Engine;
-use base64::prelude::{BASE64_URL_SAFE, BASE64_URL_SAFE_NO_PAD};
-use ecdsa::elliptic_curve::point::{AffineCoordinates, DecompressPoint};
-use ecdsa::EncodedPoint;
-use crate::algorithm::{JwAlg, PartialJwAlg};
-use crate::algorithm::es::{ESPublic, ESPublicParams};
-use crate::algorithm::models::es::es_curve::ESCurve;
+use crate::algorithm::es::ESPublic;
 use crate::algorithm::models::es::es_private::ESPrivate;
-use crate::algorithm::models::es::es_private_params::ESPrivateParams;
-use crate::modules::key::{JwkPrivateParams, JwkPublicParams};
+use crate::algorithm::JwAlg;
 
 // Private
 pub type ES256Private = ESPrivate<p256::NistP256>;
@@ -65,8 +58,8 @@ impl JwAlg for ES256Public {
 //     }
 // }
 
-impl From<ES256Private> for ES256Public {
-    fn from(value: ES256Private) -> Self {
-        Self(value.0.into())
-    }
-}
+// impl From<ES256Private> for ES256Public {
+//     fn from(value: ES256Private) -> Self {
+//         Self(value.0.into())
+//     }
+// }

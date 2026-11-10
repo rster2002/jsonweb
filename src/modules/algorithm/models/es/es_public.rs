@@ -1,23 +1,19 @@
-use ecdsa::{PrimeCurve, Signature, SignatureSize, VerifyingKey};
-use ecdsa::elliptic_curve::{AffinePoint, CurveArithmetic};
-use crate::algorithm::{JwAlg, JwAlgVerify};
-use ecdsa::elliptic_curve::generic_array::ArrayLength;
-use ecdsa::hazmat::{DigestPrimitive, VerifyPrimitive};
+use crate::algorithm::JwAlgVerify;
+use ecdsa::elliptic_curve::CurveArithmetic;
 use ecdsa::signature::Verifier;
-use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
+use ecdsa::{EcdsaCurve, Signature, VerifyingKey};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct ESPublic<C>(pub(crate) VerifyingKey<C>)
+pub struct ESPublic<C>
 where
-    C: PrimeCurve + CurveArithmetic + DigestPrimitive,
-    AffinePoint<C>: VerifyPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>;
+    C: EcdsaCurve + CurveArithmetic,
+{
+    pub(crate) verifying_key: VerifyingKey<C>,
+}
 
 impl<C> JwAlgVerify for ESPublic<C>
 where
-    C: PrimeCurve + CurveArithmetic + DigestPrimitive,
-    AffinePoint<C>: VerifyPrimitive<C>,
-    SignatureSize<C>: ArrayLength<u8>,
+    C: EcdsaCurve + CurveArithmetic,
 {
     type Error = ecdsa::Error;
 
@@ -27,6 +23,6 @@ where
             Err(_) => return Ok(false),
         };
 
-        Ok(self.0.verify(payload, &signature).is_ok())
+        Ok(self.verifying_key.verify(payload, &signature).is_ok())
     }
 }
