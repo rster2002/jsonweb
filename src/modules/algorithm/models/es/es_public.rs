@@ -6,14 +6,14 @@ use ecdsa::{EcdsaCurve, Signature, VerifyingKey};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ESPublic<C>
 where
-    C: EcdsaCurve + CurveArithmetic,
+    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
 {
     pub(crate) verifying_key: VerifyingKey<C>,
 }
 
 impl<C> JwAlgVerify for ESPublic<C>
 where
-    C: EcdsaCurve + CurveArithmetic,
+    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
 {
     type Error = ecdsa::Error;
 

@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
-use crate::algorithm::models::es::es_curve::ESCurve;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ESPublicParams {
-    pub crv: ESCurve,
+    pub crv: String,
     pub x: String,
     pub y: String,
 }

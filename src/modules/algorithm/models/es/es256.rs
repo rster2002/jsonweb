@@ -1,6 +1,7 @@
-use crate::algorithm::es::ESPublic;
+use crate::algorithm::es::{ESError, ESPrivateParams, ESPublic};
 use crate::algorithm::models::es::es_private::ESPrivate;
 use crate::algorithm::JwAlg;
+use crate::modules::key::JwkPrivateParams;
 
 // Private
 pub type ES256Private = ESPrivate<p256::NistP256>;
@@ -9,6 +10,28 @@ impl JwAlg for ES256Private {
     fn alg() -> impl AsRef<str> {
         "ES256"
     }
+}
+
+impl TryFrom<ESPrivateParams> for ES256Private {
+    type Error = ESError;
+
+    fn try_from(value: ESPrivateParams) -> Result<Self, Self::Error> {
+        
+
+        todo!()
+    }
+}
+
+impl TryInto<ESPrivateParams> for ES256Private {
+    type Error = ESError;
+
+    fn try_into(self) -> Result<ESPrivateParams, Self::Error> {
+        self.private_parameters("P-256")
+    }
+}
+
+impl JwkPrivateParams for ES256Private {
+    type PrivateParams = ESPrivateParams;
 }
 
 // impl JwkPrivateParams<'_> for ES256Private {

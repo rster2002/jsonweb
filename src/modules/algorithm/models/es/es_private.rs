@@ -1,5 +1,7 @@
 use std::convert::Infallible;
-use ecdsa::elliptic_curve::{AffinePoint, CurveArithmetic, PrimeCurve, Scalar};
+use base64::Engine;
+use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+use ecdsa::elliptic_curve::{sec1, AffinePoint, CurveArithmetic, FieldBytesSize, PrimeCurve, Scalar};
 use ecdsa::elliptic_curve::ops::Invert;
 use ecdsa::elliptic_curve::subtle::CtOption;
 use ecdsa::{EcdsaCurve, Signature, SignatureSize, SigningKey};
@@ -7,21 +9,56 @@ use ecdsa::signature::{Signer, Verifier};
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::algorithm::traits::jw_alg::JwAlg;
 use ecdsa::elliptic_curve::FieldBytes;
-use crate::algorithm::es::ESError;
+use ecdsa::elliptic_curve::sec1::{FromSec1Point, ToSec1Point};
+use crate::algorithm::es::{ESError, ESPrivateParams};
 use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
 use crate::modules::key::{JwkPrivateParams, JwkType};
 
 #[derive(Debug, Clone)]
 pub struct ESPrivate<C>
 where
-    C: EcdsaCurve + CurveArithmetic,
+    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+    FieldBytesSize<C>: sec1::ModulusSize,
 {
     pub(crate) signing_key: SigningKey<C>,
 }
 
+impl<C> ESPrivate<C>
+where C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
+      AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+      FieldBytesSize<C>: sec1::ModulusSize,
+{
+    /// Returns an incomplete ESPrivateParams struct where the `crv` field is empty.
+    pub(crate) fn private_parameters(&self, crv: impl Into<String>) -> Result<ESPrivateParams, ESError> {
+        let verifying_key = self.signing_key.verifying_key();
+        let sec1_point = verifying_key.to_sec1_point(false);
+        let x = sec1_point.x()
+            .ok_or(ESError::MissingSec1X)?;
+
+        let y = sec1_point.y()
+            .ok_or(ESError::MissingSec1Y)?;
+
+        // TODO check: Missing "The length of this octet string
+        //    MUST be ceiling(log-base-2(n)/8) octets (where n is the order of the
+        //    curve)."
+
+        let d = self.signing_key.to_bytes();
+
+        Ok(ESPrivateParams {
+            crv: crv.into(),
+            x: BASE64_URL_SAFE_NO_PAD.encode(x),
+            y: BASE64_URL_SAFE_NO_PAD.encode(y),
+            d: BASE64_URL_SAFE_NO_PAD.encode(d),
+        })
+    }
+}
+
 impl<C> JwAlgVerify for ESPrivate<C>
 where
-    C: CurveArithmetic + EcdsaCurve,
+    C: CurveArithmetic + EcdsaCurve + ecdsa::DigestAlgorithm,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+    FieldBytesSize<C>: sec1::ModulusSize,
 {
     type Error = ESError;
 
@@ -32,7 +69,9 @@ where
 
 impl<C> JwAlgSign for ESPrivate<C>
 where
-    C: EcdsaCurve + CurveArithmetic,
+    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+    FieldBytesSize<C>: sec1::ModulusSize,
 {
     type Error = Infallible;
 
@@ -93,7 +132,9 @@ where
 
 impl<C> JwkType for ESPrivate<C>
 where
-    C: EcdsaCurve + CurveArithmetic,
+    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+    FieldBytesSize<C>: sec1::ModulusSize,
 {
     fn kty() -> impl AsRef<str> {
         "EC"
@@ -102,7 +143,9 @@ where
 
 impl<C> From<SigningKey<C>> for ESPrivate<C>
 where
-    C: EcdsaCurve + CurveArithmetic,
+    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
+    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+    FieldBytesSize<C>: sec1::ModulusSize,
 {
     fn from(key: SigningKey<C>) -> Self {
         ESPrivate {

@@ -1,11 +1,9 @@
 mod es_private;
 mod es_public;
 mod es_private_params;
-mod es_curve;
 mod es_public_params;
 
 pub use error::ESError;
-pub use es_curve::ESCurve;
 pub use es_private::ESPrivate;
 pub use es_private_params::ESPrivateParams;
 pub use es_public::ESPublic;
