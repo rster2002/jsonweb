@@ -31,6 +31,10 @@ impl Jwk {
     pub fn to_private<A>(self) -> Result<A, JwkError>
     where A : JwAlg + JwkPrivateParams,
     {
+        if self.kty != A::kty().as_ref() {
+            return Err(JwkError::MismatchedKeyType);
+        }
+
         let Some(alg) = self.alg else {
             return Err(JwkError::MissingAlgorithm);
         };
@@ -55,7 +59,6 @@ impl TryFrom<Value> for Jwk {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use crate::algorithm::JwAlgSign;
     use crate::algorithm::rs::RS256Private;
     use crate::modules::header::JoseHeader;
     use crate::modules::key::Jwk;

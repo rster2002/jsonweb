@@ -1,7 +1,7 @@
 use crate::algorithm::hs::error::HSError;
 use crate::algorithm::hs::hs_private_params::HSPrivateParams;
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
-use crate::modules::key::JwkPrivateParams;
+use crate::modules::key::{JwkPrivateParams, JwkType};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use digest::KeyInit;
@@ -103,6 +103,15 @@ where
         Ok(HSPrivateParams {
             k: BASE64_URL_SAFE_NO_PAD.encode(self.key)
         })
+    }
+}
+
+impl<D> JwkType for HSPrivate<D>
+where
+    D: EagerHash,
+{
+    fn kty() -> impl AsRef<str> {
+        "oct"
     }
 }
 

@@ -5,6 +5,9 @@ use thiserror::Error;
 pub enum JwkError {
     SerdeJson(#[from] serde_json::Error),
 
+    #[error("Mismatched key type")]
+    MismatchedKeyType,
+    
     #[error("Missing algorithm")]
     MissingAlgorithm,
 

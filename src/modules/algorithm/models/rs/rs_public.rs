@@ -1,4 +1,3 @@
-use std::convert::Infallible;
 use std::marker::PhantomData;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
@@ -7,11 +6,11 @@ use digest::Digest;
 use rsa::{BoxedUint, PublicKey};
 use rsa::signature::Verifier;
 use rsa::traits::PublicKeyParts;
-use crate::algorithm::{JwAlgVerify};
+use crate::algorithm::JwAlgVerify;
 use crate::algorithm::rs::error::RSError;
 use crate::algorithm::rs::rs_private::RSPrivate;
 use crate::algorithm::rs::rs_public_params::RSPublicParams;
-use crate::modules::key::JwkPublicParams;
+use crate::modules::key::{JwkPublicParams, JwkType};
 
 #[derive(Debug, Clone)]
 pub struct RSPublic<D>
@@ -92,8 +91,38 @@ where
     }
 }
 
+impl<D> JwkType for RSPublic<D>
+where
+    D: AssociatedOid + Digest,
+{
+    fn kty() -> impl AsRef<str> {
+        "RSA"
+    }
+}
+
 impl<D> JwkPublicParams for RSPublic<D>
 where D : Digest + AssociatedOid,
 {
     type PublicParams = RSPublicParams;
+}
+
+impl<D> From<RSPrivate<D>> for RSPublic<D>
+where
+    D: AssociatedOid + Digest,
+{
+    fn from(value: RSPrivate<D>) -> Self {
+        RSPublic::from(value.private_key.as_public_key().clone())
+    }
+}
+
+impl<D> From<PublicKey> for RSPublic<D>
+where
+    D: AssociatedOid + Digest,
+{
+    fn from(value: PublicKey) -> Self {
+        RSPublic {
+            public_key: value,
+            _p: PhantomData,
+        }
+    }
 }

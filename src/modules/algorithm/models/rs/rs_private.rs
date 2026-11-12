@@ -1,6 +1,6 @@
 use crate::algorithm::rs::rs_private_params::RSPrivateParams;
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
-use crate::modules::key::JwkPrivateParams;
+use crate::modules::key::{JwkPrivateParams, JwkType};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use const_oid::AssociatedOid;
@@ -14,6 +14,7 @@ use crate::algorithm::rs::error::RSError;
 #[cfg(feature = "pkcs1")]
 use rsa::pkcs1::EncodeRsaPrivateKey;
 use rsa::traits::{PrivateKeyParts, PublicKeyParts};
+use crate::algorithm::rs::RSPublic;
 
 #[derive(Debug, Clone)]
 pub struct RSPrivate<D>
@@ -81,6 +82,15 @@ where
             .pkcs1v15_sign::<D>(payload)
             .map_err(|e| RSError::FailedToSign(e))?
             .to_vec())
+    }
+}
+
+impl<D> JwkType for RSPrivate<D>
+where
+    D: AssociatedOid + Digest,
+{
+    fn kty() -> impl AsRef<str> {
+        "RSA"
     }
 }
 
