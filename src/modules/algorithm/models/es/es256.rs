@@ -28,8 +28,20 @@ impl TryInto<ESPrivateParams> for ES256Private {
     }
 }
 
+impl TryInto<ESPublicParams> for ES256Private {
+    type Error = ESError;
+
+    fn try_into(self) -> Result<ESPublicParams, Self::Error> {
+        ESPublic::into_public_parameters(self.signing_key.verifying_key(), "P-256")
+    }
+}
+
 impl JwkPrivateParams for ES256Private {
     type PrivateParams = ESPrivateParams;
+}
+
+impl JwkPublicParams for ES256Private {
+    type PublicParams = ESPublicParams;
 }
 
 // Public

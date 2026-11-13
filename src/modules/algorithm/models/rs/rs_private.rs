@@ -1,6 +1,6 @@
 use crate::algorithm::rs::rs_private_params::RSPrivateParams;
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
-use crate::modules::key::{JwkPrivateParams, JwkType};
+use crate::modules::key::{JwkPrivateParams, JwkPublicParams, JwkType};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use const_oid::AssociatedOid;
@@ -8,13 +8,12 @@ use digest::Digest;
 use rsa::BoxedUint;
 use rsa::PrivateKey;
 use std::marker::PhantomData;
-use std::ops::Deref;
 
 use crate::algorithm::rs::error::RSError;
 #[cfg(feature = "pkcs1")]
 use rsa::pkcs1::EncodeRsaPrivateKey;
+use crate::algorithm::rs::RSPublicParams;
 use rsa::traits::{PrivateKeyParts, PublicKeyParts};
-use crate::algorithm::rs::RSPublic;
 
 #[derive(Debug, Clone)]
 pub struct RSPrivate<D>
@@ -80,7 +79,7 @@ where
         Ok(self
             .private_key
             .pkcs1v15_sign::<D>(payload)
-            .map_err(|e| RSError::FailedToSign(e))?
+            .map_err(RSError::FailedToSign)?
             .to_vec())
     }
 }
@@ -94,13 +93,6 @@ where
     }
 }
 
-impl<D> JwkPrivateParams for RSPrivate<D>
-where
-    D: Digest + AssociatedOid,
-{
-    type PrivateParams = RSPrivateParams;
-}
-
 impl<D> TryFrom<RSPrivateParams> for RSPrivate<D>
 where
     D: AssociatedOid + Digest,
@@ -111,13 +103,13 @@ where
         let n = BASE64_URL_SAFE_NO_PAD
             .decode(value.n)
             .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeN(e))?
+            .map_err(RSError::FailedToBase64DecodeN)?
             .map_err(|e| RSError::FailedToRepresentN(rsa::Error::Decode(e)))?;
 
         let p = BASE64_URL_SAFE_NO_PAD
             .decode(value.p)
             .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeP(e))?
+            .map_err(RSError::FailedToBase64DecodeP)?
             .map_err(|e| RSError::FailedToRepresentP(rsa::Error::Decode(e)))?;
 
         let q = BASE64_URL_SAFE_NO_PAD
@@ -243,6 +235,34 @@ where
             qi,
         })
     }
+}
+
+impl<D> JwkPrivateParams for RSPrivate<D>
+where
+    D: Digest + AssociatedOid,
+{
+    type PrivateParams = RSPrivateParams;
+}
+
+impl<D> TryInto<RSPublicParams> for RSPrivate<D>
+where
+    D: Digest + AssociatedOid,
+{
+    type Error = RSError;
+
+    fn try_into(self) -> Result<RSPublicParams, Self::Error> {
+        Ok(RSPublicParams {
+            n: BASE64_URL_SAFE_NO_PAD.encode(self.private_key.n_bytes()),
+            e: BASE64_URL_SAFE_NO_PAD.encode(self.private_key.e_bytes()),
+        })
+    }
+}
+
+impl<D> JwkPublicParams for RSPrivate<D>
+where
+    D: Digest + AssociatedOid,
+{
+    type PublicParams = RSPublicParams;
 }
 
 impl<D> From<PrivateKey> for RSPrivate<D>

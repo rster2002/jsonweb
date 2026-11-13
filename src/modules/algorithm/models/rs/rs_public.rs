@@ -1,16 +1,15 @@
-use std::marker::PhantomData;
-use base64::Engine;
-use base64::prelude::BASE64_URL_SAFE_NO_PAD;
-use const_oid::AssociatedOid;
-use digest::Digest;
-use rsa::{BoxedUint, PublicKey};
-use rsa::signature::Verifier;
-use rsa::traits::PublicKeyParts;
 use crate::algorithm::JwAlgVerify;
 use crate::algorithm::rs::error::RSError;
 use crate::algorithm::rs::rs_private::RSPrivate;
 use crate::algorithm::rs::rs_public_params::RSPublicParams;
 use crate::modules::key::{JwkPublicParams, JwkType};
+use base64::Engine;
+use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+use const_oid::AssociatedOid;
+use digest::Digest;
+use rsa::traits::PublicKeyParts;
+use rsa::{BoxedUint, PublicKey};
+use std::marker::PhantomData;
 
 #[derive(Debug, Clone)]
 pub struct RSPublic<D>

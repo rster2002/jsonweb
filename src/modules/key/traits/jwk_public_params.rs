@@ -4,6 +4,6 @@ use crate::modules::key::JwkType;
 
 /// Implement for algorithms that have public parameters. Symmetric algorithms MUST NOT implement
 /// this trait.
-pub trait JwkPublicParams: JwkType + TryFrom<Self::PublicParams> + TryInto<Self::PublicParams> {
+pub trait JwkPublicParams {
     type PublicParams: Serialize + DeserializeOwned;
 }

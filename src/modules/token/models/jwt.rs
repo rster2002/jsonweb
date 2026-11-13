@@ -1,15 +1,14 @@
-use std::borrow::Cow;
-use std::fmt::{Debug, Formatter};
+use crate::algorithm::{JwAlg, JwAlgSign, JwAlgVerify, PartialJwAlgVerify};
+use crate::modules::header::JoseHeader;
+use crate::modules::signature::verify_compact;
+use crate::token::models::jwt_claims::JwtClaims;
+use crate::token::JwtError;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
-use crate::algorithm::{JwAlgVerify, JwAlgSign, JwAlg, PartialJwAlg, PartialJwAlgVerify};
-use crate::modules::header::JoseHeader;
-use crate::modules::signature::verify_compact;
-use crate::token::{JwtError, JwtHeader};
-use crate::token::models::jwt_claims::JwtClaims;
+use serde_json::{Value, json};
+use std::fmt::{Debug, Formatter};
 
 /// Representation of a (decoded) JWT token.
 pub struct Jwt<T>

@@ -1,6 +1,6 @@
-use sha2::Sha256;
-use crate::algorithm::{JwAlg, PartialJwAlg};
 use crate::algorithm::hs::HSPrivate;
+use crate::algorithm::JwAlg;
+use sha2::Sha256;
 
 pub type HS256Private = HSPrivate<Sha256>;
 

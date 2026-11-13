@@ -33,25 +33,17 @@ impl JwkPrivateParams for ES384Private {
     type PrivateParams = ESPrivateParams;
 }
 
-// impl TryFrom<ESPublicParams> for ES384Private {
-//     type Error = ESError;
-//
-//     fn try_from(value: ESPublicParams) -> Result<Self, Self::Error> {
-//         ES384Public::into_public_parameters(value., "P-384")
-//     }
-// }
-//
-// impl TryInto<ESPublicParams> for ES384Private {
-//     type Error = ESError;
-//
-//     fn try_into(self) -> Result<ESPublicParams, Self::Error> {
-//         todo!()
-//     }
-// }
-//
-// impl JwkPublicParams for ES384Private {
-//     type PublicParams = ESPublicParams;
-// }
+impl TryInto<ESPublicParams> for ES384Private {
+    type Error = ESError;
+
+    fn try_into(self) -> Result<ESPublicParams, Self::Error> {
+        ESPublic::into_public_parameters(self.signing_key.verifying_key(), "P-384")
+    }
+}
+
+impl JwkPublicParams for ES384Private {
+    type PublicParams = ESPublicParams;
+}
 
 // Public
 pub type ES384Public = ESPublic<p384::NistP384>;

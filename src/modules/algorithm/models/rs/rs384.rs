@@ -1,6 +1,6 @@
-use crate::algorithm::{JwAlg, PartialJwAlg};
 use crate::algorithm::models::rs::rs_private::RSPrivate;
 use crate::algorithm::models::rs::rs_public::RSPublic;
+use crate::algorithm::JwAlg;
 
 // Private
 pub type RS384Private = RSPrivate<sha2::Sha384>;

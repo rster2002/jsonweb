@@ -1,5 +1,5 @@
 use crate::algorithm::{JwAlg, JwAlgVerify};
-use crate::modules::key::{JwkError, JwkPrivateParams};
+use crate::modules::key::{JwkError, JwkPrivateParams, JwkType};
 use crate::modules::key::models::jwk_key_op::JwkKeyOp;
 use crate::modules::key::models::jwt_use::JwkUse;
 use crate::token::JwtError;
@@ -29,7 +29,7 @@ pub struct Jwk {
 impl Jwk {
     /// Attempt to turn the JWK into a private algorithm to use.
     pub fn to_private<A>(self) -> Result<A, JwkError>
-    where A : JwAlg + JwkPrivateParams,
+    where A : JwAlg + JwkType + JwkPrivateParams + TryFrom<<A as JwkPrivateParams>::PrivateParams>,
     {
         if self.kty != A::kty().as_ref() {
             return Err(JwkError::MismatchedKeyType);
