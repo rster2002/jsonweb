@@ -433,6 +433,7 @@ dependencies = [
  "hmac",
  "p256",
  "p384",
+ "pastey",
  "pkcs1 0.7.5",
  "rand",
  "rsa",
@@ -501,6 +502,12 @@ dependencies = [
  "primeorder",
  "sha2",
 ]
+
+[[package]]
+name = "pastey"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ee67f1008b1ba2321834326597b8e186293b049a023cdef258527550b9935b4"
 
 [[package]]
 name = "pem-rfc7468"

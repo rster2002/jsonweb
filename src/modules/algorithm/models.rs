@@ -1,3 +1,7 @@
+mod private_set_error;
+
+pub use private_set_error::PrivateSetError;
+
 pub mod none_algorithm;
 
 #[cfg(any(feature = "hs256", feature = "hs384", feature = "hs512"))]

@@ -1,5 +1,6 @@
 mod models;
 mod traits;
+mod macros;
 
 pub use traits::jw_alg_verify::JwAlgVerify;
 pub use traits::jw_alg_sign::JwAlgSign;

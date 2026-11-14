@@ -20,6 +20,7 @@ ecdsa = "0.17.0"
 rand = { version = "0.8.0", optional = true }
 bon = "3.10.3"
 const-oid = "0.10.2"
+pastey = "0.2.3"
 
 [features]
 default = ["hs256"]
