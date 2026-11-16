@@ -1,10 +1,11 @@
-use crate::algorithm::{JwAlg, JwAlgVerify, HandlesJwAlg, PartialJwAlgVerify};
+use crate::algorithm::PartialJwAlgVerify;
 use crate::modules::header::JoseHeader;
 use crate::modules::signature::error::JwsError;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 
-pub fn verify_compact<A>(signature: &str, algorithm: &A) -> Result<Vec<u8>, JwsError>
+/// Verify a compact JWS signature using the specified algorithm.
+pub fn verify_compact<A>(signature: &str, algorithm: &A) -> Result<(JoseHeader, Vec<u8>), JwsError>
 where
     A: PartialJwAlgVerify
 {
@@ -32,7 +33,7 @@ where
         None => Err(JwsError::UnmatchedAlgorithm),
         Some(Err(error)) => Err(JwsError::AlgError(error.to_string())),
         Some(Ok(false)) => Err(JwsError::InvalidSignature),
-        Some(Ok(true)) => Ok(payload_bytes)
+        Some(Ok(true)) => Ok((header_json, payload_bytes))
     }
 }
 
@@ -48,7 +49,7 @@ mod tests {
             "eyJhbGciOiJIUzI1NiJ9.SGVsbG8gd29ybGQ.lx8XX3uMIc57Na8JUblW-_qwlZ3H2bwkSZwvL8Iqa5w";
         let hs256 = HS256Private::new(b"secret").unwrap();
 
-        let payload = verify_compact(signature, &hs256).unwrap();
+        let (_, payload) = verify_compact(signature, &hs256).unwrap();
 
         assert_eq!(payload, b"Hello world");
     }

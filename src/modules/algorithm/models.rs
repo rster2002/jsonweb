@@ -1,6 +1,8 @@
 mod private_set_error;
 mod public_set_error;
 
+pub mod any;
+
 pub use private_set_error::PrivateSetError;
 pub use public_set_error::PublicSetError;
 

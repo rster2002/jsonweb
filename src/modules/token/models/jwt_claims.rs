@@ -71,6 +71,7 @@ pub struct JwtClaims {
 }
 
 impl JwtClaims {
+    /// Whether the claims are empty.
     pub fn is_empty(&self) -> bool {
         let any_set = self.iss.is_some()
             || self.sub.is_some()
@@ -83,6 +84,7 @@ impl JwtClaims {
         !any_set
     }
 
+    /// Create a new set of claims that fill `exp`, `nbf` and `iat` with the current timestamp.
     pub fn now() -> JwtClaims {
         let now_timestamp = Utc::now().timestamp();
 
@@ -97,6 +99,8 @@ impl JwtClaims {
         }
     }
 
+    /// Create a new set of claims that fill `nbf` and `iat` with the current timestamp, but not
+    /// the `exp` claim.
     pub fn no_expiry() -> JwtClaims {
         let now_timestamp = Utc::now().timestamp();
 
@@ -111,6 +115,9 @@ impl JwtClaims {
         }
     }
 
+    /// Create a new set of claims that fill `nbf` and `exp` with a grace period in seconds. The
+    /// grade pushes the `exp` time to `now + grace` and the `nbf` time to `now - grace`. The `iat`
+    /// claim is always filled with the current timestamp.
     pub fn grace(grace: i64) -> JwtClaims {
         let now_timestamp = Utc::now().timestamp();
 
@@ -125,85 +132,107 @@ impl JwtClaims {
         }
     }
 
+    /// Set the `iss` claim and return `Self`.
     pub fn issuer(mut self, issuer: impl Into<String>) -> Self {
         self.iss = Some(issuer.into());
         self
     }
 
+    /// Set the `sub` claim and return `Self`.
     pub fn subject(mut self, subject: impl Into<String>) -> Self {
         self.sub = Some(subject.into());
         self
     }
 
+    /// Set the `aud` claim and return `Self`.
     pub fn audience(mut self, audience: impl Into<String>) -> Self {
         self.aud = Some(audience.into());
         self
     }
 
+    /// Set the `iat` claim to the given datetime and return `Self`.
     pub fn issued_at(mut self, issued_at: DateTime<Utc>) -> Self {
         self.iat = Some(issued_at.timestamp());
         self
     }
 
+    /// Set the `iat` claim to the given timestamp in seconds since Epoch and return `Self`.
     pub fn issued_at_timestamp(mut self, timestamp: i64) -> Self {
         self.iat = Some(timestamp);
         self
     }
 
+    /// Set the `exp` claim to `now + duration` and return `Self`.
     pub fn expire_in(mut self, duration: Duration) -> Self {
         self.exp = Some(Utc::now().timestamp() + duration.num_seconds());
         self
     }
 
+    /// Set the `exp` claim to `now + seconds` and return `Self`.
     pub fn expire_in_seconds(mut self, seconds: i64) -> Self {
         self.exp = Some(Utc::now().timestamp() + seconds);
         self
     }
 
+    /// Set the `exp` claim to the given datetime and return `Self`.
+    pub fn expire_at(mut self, expire_at: DateTime<Utc>) -> Self {
+        self.exp = Some(expire_at.timestamp());
+        self
+    }
+
+    /// Set the `nbf` claim to `now + duration` and return `Self`.
     pub fn not_before(mut self, duration: Duration) -> Self {
         self.nbf = Some(Utc::now().timestamp() + duration.num_seconds());
         self
     }
 
+    /// Set the `nbf` claim to `now + seconds` and return `Self`.
     pub fn not_before_seconds(mut self, seconds: i64) -> Self {
         self.nbf = Some(Utc::now().timestamp() + seconds);
         self
     }
 
-    pub fn with_jti(mut self, jti: impl Into<String>) -> Self {
+    /// Set the `nbf` claim to the given datetime and return `Self`.
+    pub fn not_before_at(mut self, not_before: DateTime<Utc>) -> Self {
+        self.nbf = Some(not_before.timestamp());
+        self
+    }
+
+    /// Set the `jti` claim to the given value and return `Self`.
+    pub fn id(mut self, jti: impl Into<String>) -> Self {
         self.jti = Some(jti.into());
         self
     }
 
-    /// Overwrites the current values with the other values, copying the ones that are set.
-    pub fn with_merge(mut self, other: &JwtClaims) -> JwtClaims {
-        if let Some(nbf) = &other.nbf {
-            self.nbf = Some(nbf.clone());
+    /// Returns a new `JwtClaims` struct with the values from `self` and `other` merged, only
+    /// setting the values of `other` if the value for `self` is `Some`.
+    pub fn and(self, other: JwtClaims) -> JwtClaims {
+        JwtClaims {
+            iss: self.iss.and(other.iss),
+            sub: self.sub.and(other.sub),
+            aud: self.aud.and(other.aud),
+            exp: self.exp.and(other.exp),
+            nbf: self.nbf.and(other.nbf),
+            iat: self.iat.and(other.iat),
+            jti: self.jti.and(other.jti),
         }
-
-        if let Some(exp) = &other.exp {
-            self.exp = Some(exp.clone());
-        }
-
-        if let Some(iat) = &other.iat {
-            self.iat = Some(iat.clone());
-        }
-
-        if let Some(iss ) = &other.iss {
-            self.iss = Some(iss.clone());
-        }
-
-        if let Some(aud ) = &other.aud {
-            self.aud = Some(aud.clone());
-        }
-
-        if let Some(jti) = &other.jti {
-            self.jti = Some(jti.clone());
-        }
-
-        self
     }
 
+    /// Returns a new `JwtClaims` struct with the values from `self` and `other` merged, preferring
+    /// the values of `self`.
+    pub fn or(self, other: JwtClaims) -> JwtClaims {
+        JwtClaims {
+            iss: self.iss.or(other.iss),
+            sub: self.sub.or(other.sub),
+            aud: self.aud.or(other.aud),
+            exp: self.exp.or(other.exp),
+            nbf: self.nbf.or(other.nbf),
+            iat: self.iat.or(other.iat),
+            jti: self.jti.or(other.jti),
+        }
+    }
+
+    /// Verify the claims of `self` against the expected claims in `other`.
     pub fn verify(&self, other: &JwtClaims) -> Result<(), JwtError> {
         if let Some(expected) = &other.nbf {
             let Some(received) = &self.nbf else {

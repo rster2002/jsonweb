@@ -19,13 +19,9 @@ macro_rules! private_alg_enum {
 
             impl crate::algorithm::HandlesJwAlg for $i {
                 fn handles_alg(&self, alg: &str) -> bool {
-                    $(
-                        if alg == <$j as crate::algorithm::JwAlg>::alg().as_ref() {
-                            return true;
-                        }
-                    )+
-
-                    false
+                    match self {
+                        $($i::$j(v) => v.handles_alg(alg),)+
+                    }
                 }
             }
 
@@ -66,11 +62,12 @@ macro_rules! private_alg_enum {
 mod tests {
     use serde_json::json;
     use crate::algorithm::es::ES256Private;
-    use crate::algorithm::JwAlgSign;
+    use crate::algorithm::hs::HS256Private;
+    use crate::algorithm::{HandlesJwAlg, JwAlgSign};
     use crate::algorithm::rs::{RS256Private};
     use crate::key::Jwk;
 
-    private_alg_enum!(MySet, RS256Private, ES256Private);
+    private_alg_enum!(MySet, RS256Private, ES256Private, HS256Private);
 
     #[test]
     fn rsa_key_can_be_extracted() {
@@ -111,5 +108,13 @@ mod tests {
 
         let signature = alg.sign(b"Hello world");
         assert!(signature.is_ok());
+    }
+
+    #[test]
+    fn only_the_specific_variant_alg_can_be_handled() {
+        let alg = MySet::HS256Private(HS256Private::new(b"secret").unwrap());
+
+        assert!(alg.handles_alg("HS256"));
+        assert!(!alg.handles_alg("RS256"));
     }
 }

@@ -1,44 +1,9 @@
-mod models;
 mod error;
+mod models;
+mod functions;
 
-pub use models::jwt::Jwt;
-pub use models::jwt_claims::JwtClaims;
-pub use models::jwt_header::JwtHeader;
 pub use error::JwtError;
+pub use models::jwt_claims::JwtClaims;
 
-#[cfg(test)]
-mod tests {
-    use crate::algorithm::{JwAlgVerify};
-    use crate::algorithm::hs::HS256Private;
-    use crate::token::Jwt;
-
-    #[test]
-    fn simple_jwt_token_can_be_generated() {
-        let algorithm = HS256Private::new("something".as_bytes())
-            .unwrap();
-
-        let token = Jwt::new("hello world".to_string())
-            .into_token(&algorithm)
-            .unwrap();
-
-        let jwt = Jwt::<String>::check(&token, &algorithm)
-            .unwrap();
-    }
-
-    #[test]
-    fn incorrect_signature_key() {
-        let algorithm_1 = HS256Private::new("something".as_bytes())
-            .unwrap();
-
-        let token = Jwt::new("hello world".to_string())
-            .into_token(&algorithm_1)
-            .unwrap();
-
-        let algorithm_2 = HS256Private::new("else".as_bytes())
-            .unwrap();
-
-        let jwt = Jwt::<String>::check(&token, &algorithm_2);
-
-        assert!(jwt.is_err());
-    }
-}
+pub use functions::decode_jwt::decode_jwt;
+pub use functions::encode_jwt::encode_jwt;

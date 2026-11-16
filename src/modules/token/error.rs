@@ -5,8 +5,8 @@ use crate::modules::signature::JwsError;
 #[error(transparent)]
 pub enum JwtError {
     SerdeJson(#[from] serde_json::Error),
-    DecodeError(#[from] base64::DecodeError),
-    AlgError(Box<dyn std::error::Error>),
+    // DecodeError(#[from] base64::DecodeError),
+    // AlgError(Box<dyn std::error::Error>),
     JwsError(#[from] JwsError),
 
     #[error("{0}")]
@@ -16,7 +16,7 @@ pub enum JwtError {
     PayloadNotAnObject,
 
     #[error("JWT token does not specify the correct `alg` in the header")]
-    AlgMismatch,
+    MismatchedAlg,
 
     #[error("No header")]
     NoHeader,

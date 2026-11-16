@@ -19,13 +19,9 @@ macro_rules! public_alg_enum {
 
             impl crate::algorithm::HandlesJwAlg for $i {
                 fn handles_alg(&self, alg: &str) -> bool {
-                    $(
-                        if alg == <$j as crate::algorithm::JwAlg>::alg().as_ref() {
-                            return true;
-                        }
-                    )+
-
-                    false
+                    match self {
+                        $($i::$j(v) => v.handles_alg(alg),)+
+                    }
                 }
             }
 

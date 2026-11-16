@@ -3,7 +3,7 @@ use bon::Builder;
 use serde::{Deserialize, Serialize};
 use crate::algorithm::JwAlg;
 
-#[derive(Debug, Serialize, Deserialize, Default, Builder)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, Builder)]
 pub struct JoseHeader {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub typ: Option<String>,

@@ -4,6 +4,7 @@ use crate::modules::signature::error::JwsError;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 
+/// Sign a payload using the specified algorithm.
 pub fn sign_compact<A>(
     header: JoseHeader,
     payload: &[u8],
