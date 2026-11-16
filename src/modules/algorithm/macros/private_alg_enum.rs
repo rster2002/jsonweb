@@ -1,5 +1,6 @@
 #[macro_export]
-macro_rules! private_alg_set {
+/// Creates an enum covering all the private algorithms and their parameters.
+macro_rules! private_alg_enum {
     ($i:ident, $($j:ident),+ $(,)?) => {
         pastey::paste! {
             enum $i {
@@ -49,11 +50,11 @@ macro_rules! private_alg_set {
             }
 
             impl TryFrom<[< $i Params >]> for $i {
-                type Error = ();
+                type Error = crate::algorithm::PrivateSetError;
 
-                fn try_from(value: [< $i Params >]) -> Result<$i, ()> {
+                fn try_from(value: [< $i Params >]) -> Result<$i, Self::Error> {
                     Ok(match value {
-                        $([< $i Params >]::$j(v) => $i::$j($j::try_from(v).map_err(|_| ())?),)+
+                        $([< $i Params >]::$j(v) => $i::$j($j::try_from(v).map_err(|e| crate::algorithm::PrivateSetError::FailedToParse(e.to_string()))?),)+
                     })
                 }
             }
@@ -69,7 +70,7 @@ mod tests {
     use crate::algorithm::rs::{RS256Private};
     use crate::key::Jwk;
 
-    private_alg_set!(MySet, RS256Private, ES256Private);
+    private_alg_enum!(MySet, RS256Private, ES256Private);
 
     #[test]
     fn rsa_key_can_be_extracted() {

@@ -7,4 +7,7 @@ pub enum PrivateSetError {
     
     #[error("Failed to verify using set")]
     FailedToVerify,
+
+    #[error("Failed to parse")]
+    FailedToParse(String),
 }
