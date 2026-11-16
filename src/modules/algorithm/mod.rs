@@ -5,7 +5,7 @@ mod macros;
 pub use traits::jw_alg_verify::JwAlgVerify;
 pub use traits::jw_alg_sign::JwAlgSign;
 pub use traits::jw_alg::JwAlg;
-pub use traits::partial_jw_alg::PartialJwAlg;
+pub use traits::handles_jw_alg::HandlesJwAlg;
 pub use traits::partial_jw_alg_verify::PartialJwAlgVerify;
 
 pub use models::none_algorithm::NoneAlgorithm;

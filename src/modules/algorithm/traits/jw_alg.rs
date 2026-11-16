@@ -1,5 +1,5 @@
-use crate::algorithm::traits::partial_jw_alg::PartialJwAlg;
+use crate::algorithm::traits::handles_jw_alg::HandlesJwAlg;
 
-pub trait JwAlg: PartialJwAlg {
+pub trait JwAlg: HandlesJwAlg {
     fn alg() -> impl AsRef<str>;
 }

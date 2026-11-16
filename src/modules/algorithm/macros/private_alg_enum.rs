@@ -17,8 +17,8 @@ macro_rules! private_alg_enum {
                 type PrivateParams = [< $i Params >];
             }
 
-            impl crate::algorithm::PartialJwAlg for $i {
-                fn eq_alg(&self, alg: &str) -> bool {
+            impl crate::algorithm::HandlesJwAlg for $i {
+                fn handles_alg(&self, alg: &str) -> bool {
                     $(
                         if alg == <$j as crate::algorithm::JwAlg>::alg().as_ref() {
                             return true;

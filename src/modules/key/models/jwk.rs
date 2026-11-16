@@ -1,10 +1,11 @@
-use crate::algorithm::{JwAlg, JwAlgVerify, PartialJwAlg};
+use crate::algorithm::{JwAlg, JwAlgVerify, HandlesJwAlg};
 use crate::modules::key::{JwkError, JwkPrivateParams, JwkType};
 use crate::modules::key::models::jwk_key_op::JwkKeyOp;
 use crate::modules::key::models::jwt_use::JwkUse;
 use crate::token::JwtError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use crate::key::JwkPublicParams;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Jwk {
@@ -27,9 +28,27 @@ pub struct Jwk {
 }
 
 impl Jwk {
+    /// Attempt to turn the JWK into a public algorithm to use.
+    pub fn to_public<A>(self) -> Result<A, JwkError>
+    where A : HandlesJwAlg + JwkPublicParams + TryFrom<<A as JwkPublicParams>::PublicParams>,
+    {
+        let Some(alg) = self.alg else {
+            return Err(JwkError::MissingAlgorithm);
+        };
+
+        let parameters = serde_json::from_value(self.parameters)?;
+        let public = A::try_from(parameters).map_err(|_| JwkError::Failed)?;
+
+        if !public.handles_alg(&alg) {
+            return Err(JwkError::MismatchedAlgorithm);
+        }
+
+        Ok(public)
+    }
+
     /// Attempt to turn the JWK into a private algorithm to use.
     pub fn to_private<A>(self) -> Result<A, JwkError>
-    where A : PartialJwAlg + JwkPrivateParams + TryFrom<<A as JwkPrivateParams>::PrivateParams>,
+    where A : HandlesJwAlg + JwkPrivateParams + TryFrom<<A as JwkPrivateParams>::PrivateParams>,
     {
         // if self.kty != A::kty().as_ref() {
         //     return Err(JwkError::MismatchedKeyType);
@@ -42,7 +61,7 @@ impl Jwk {
         let parameters = serde_json::from_value(self.parameters)?;
         let private = A::try_from(parameters).map_err(|_| JwkError::Failed)?;
 
-        if !private.eq_alg(&alg) {
+        if !private.handles_alg(&alg) {
             return Err(JwkError::MismatchedAlgorithm);
         }
 

@@ -1,4 +1,4 @@
-use crate::algorithm::{JwAlg, JwAlgVerify, PartialJwAlg, PartialJwAlgVerify};
+use crate::algorithm::{JwAlg, JwAlgVerify, HandlesJwAlg, PartialJwAlgVerify};
 use crate::modules::header::JoseHeader;
 use crate::modules::signature::error::JwsError;
 use base64::Engine;
