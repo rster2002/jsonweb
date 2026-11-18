@@ -1,6 +1,6 @@
-use crate::algorithm::rs::rs_private_params::RSPrivateParams;
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::modules::key::{JwkPrivateParams, JwkPublicParams, JwkType};
+use crate::modules::params::models::rsa::rsa_private_params::RSAPrivateParams;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use const_oid::AssociatedOid;
@@ -12,7 +12,7 @@ use std::marker::PhantomData;
 use crate::algorithm::rs::error::RSError;
 #[cfg(feature = "pkcs1")]
 use rsa::pkcs1::EncodeRsaPrivateKey;
-use crate::algorithm::rs::RSPublicParams;
+use crate::algorithm::rs::RSAPublicParams;
 use rsa::traits::{PrivateKeyParts, PublicKeyParts};
 
 #[derive(Debug, Clone)]
@@ -93,13 +93,13 @@ where
     }
 }
 
-impl<D> TryFrom<RSPrivateParams> for RSPrivate<D>
+impl<D> TryFrom<RSAPrivateParams> for RSPrivate<D>
 where
     D: AssociatedOid + Digest,
 {
     type Error = RSError;
 
-    fn try_from(value: RSPrivateParams) -> Result<Self, RSError> {
+    fn try_from(value: RSAPrivateParams) -> Result<Self, RSError> {
         let n = BASE64_URL_SAFE_NO_PAD
             .decode(value.n)
             .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
@@ -173,13 +173,13 @@ where
     }
 }
 
-impl<D> TryInto<RSPrivateParams> for RSPrivate<D>
+impl<D> TryInto<RSAPrivateParams> for RSPrivate<D>
 where
     D: AssociatedOid + Digest,
 {
     type Error = RSError;
 
-    fn try_into(mut self) -> Result<RSPrivateParams, RSError> {
+    fn try_into(mut self) -> Result<RSAPrivateParams, RSError> {
         self.private_key
             .precompute()
             .map_err(|e| RSError::FailedToPrecompute(e))?;
@@ -224,7 +224,7 @@ where
                 .to_be_bytes(),
         );
 
-        Ok(RSPrivateParams {
+        Ok(RSAPrivateParams {
             n,
             e,
             d,
@@ -241,17 +241,17 @@ impl<D> JwkPrivateParams for RSPrivate<D>
 where
     D: Digest + AssociatedOid,
 {
-    type PrivateParams = RSPrivateParams;
+    type PrivateParams = RSAPrivateParams;
 }
 
-impl<D> TryInto<RSPublicParams> for RSPrivate<D>
+impl<D> TryInto<RSAPublicParams> for RSPrivate<D>
 where
     D: Digest + AssociatedOid,
 {
     type Error = RSError;
 
-    fn try_into(self) -> Result<RSPublicParams, Self::Error> {
-        Ok(RSPublicParams {
+    fn try_into(self) -> Result<RSAPublicParams, Self::Error> {
+        Ok(RSAPublicParams {
             n: BASE64_URL_SAFE_NO_PAD.encode(self.private_key.n_bytes()),
             e: BASE64_URL_SAFE_NO_PAD.encode(self.private_key.e_bytes()),
         })
@@ -262,7 +262,7 @@ impl<D> JwkPublicParams for RSPrivate<D>
 where
     D: Digest + AssociatedOid,
 {
-    type PublicParams = RSPublicParams;
+    type PublicParams = RSAPublicParams;
 }
 
 impl<D> From<PrivateKey> for RSPrivate<D>
@@ -280,12 +280,12 @@ where
 #[cfg(test)]
 mod tests {
     use crate::algorithm::rs::RS256Private;
-    use crate::algorithm::rs::rs_private_params::RSPrivateParams;
     use crate::algorithm::{JwAlgSign, JwAlgVerify};
+    use crate::modules::params::models::rsa::rsa_private_params::RSAPrivateParams;
 
-    fn rfc_7517_a_2_rsa_params() -> RSPrivateParams {
+    fn rfc_7517_a_2_rsa_params() -> RSAPrivateParams {
         // https://www.rfc-editor.org/info/rfc7517/#appendix-A.2
-        RSPrivateParams {
+        RSAPrivateParams {
             n: String::from(
                 "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtVT86zwu1RK7aPFFxuhDR1L6tSoc_BJECPebWKRXjBZCiFV4n3oknjhMstn64tZ_2W-5JsGY4Hc5n9yBXArwl93lqt7_RN5w6Cf0h4QyQ5v-65YGjQR0_FDW2QvzqY368QQMicAtaSqzs8KJZgnYb9c7d0zgdAZHzu6qMQvRL5hajrn1n91CbOpbISD08qNLyrdkt-bFTWhAI4vMQFh6WeZu0fM4lFd2NcRwr3XPksINHaQ-G_xBniIqbw0Ls1jF44-csFCur-kEgU8awapJzKnqDKgw",
             ),
@@ -326,7 +326,7 @@ mod tests {
         let private_components = rfc_7517_a_2_rsa_params();
 
         let key = RS256Private::try_from(private_components).unwrap();
-        let jwk_params: RSPrivateParams = key.try_into().unwrap();
+        let jwk_params: RSAPrivateParams = key.try_into().unwrap();
 
         assert_eq!(rfc_7517_a_2_rsa_params(), jwk_params);
     }

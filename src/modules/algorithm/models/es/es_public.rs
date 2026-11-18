@@ -1,5 +1,5 @@
 use crate::algorithm::JwAlgVerify;
-use crate::algorithm::es::{ESError, ESPublicParams};
+use crate::algorithm::es::{ESError, ECPublicParams};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use digest::typenum::Unsigned;
@@ -27,7 +27,7 @@ where
     FieldBytesSize<C>: sec1::ModulusSize,
 {
     pub(crate) fn from_public_parameters(
-        parameters: ESPublicParams,
+        parameters: ECPublicParams,
         crv: &'static str,
     ) -> Result<Self, ESError> {
         if crv != parameters.crv {
@@ -72,12 +72,12 @@ where
     pub(crate) fn into_public_parameters(
         verifying_key: &VerifyingKey<C>,
         crv: impl Into<String>,
-    ) -> Result<ESPublicParams, ESError> {
+    ) -> Result<ECPublicParams, ESError> {
         let sec1_point = verifying_key.to_sec1_point(false);
         let x = sec1_point.x().ok_or(ESError::MissingSec1X)?;
         let y = sec1_point.y().ok_or(ESError::MissingSec1Y)?;
 
-        Ok(ESPublicParams {
+        Ok(ECPublicParams {
             crv: crv.into(),
             x: BASE64_URL_SAFE_NO_PAD.encode(x),
             y: BASE64_URL_SAFE_NO_PAD.encode(y),

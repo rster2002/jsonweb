@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct RSPrivateParams {
+pub struct RSAPrivateParams {
     pub n: String,
     pub e: String,
     pub d: String,

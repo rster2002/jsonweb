@@ -1,13 +1,11 @@
 mod error;
 mod rs_public;
 mod rs_private;
-mod rs_private_params;
-mod rs_public_params;
 
 pub use rs_public::RSPublic;
 pub use rs_private::RSPrivate;
-pub use rs_private_params::RSPrivateParams;
-pub use rs_public_params::RSPublicParams;
+pub use crate::modules::params::models::rsa::rsa_private_params::RSAPrivateParams;
+pub use crate::modules::params::models::rsa::rsa_public_params::RSAPublicParams;
 
 pub use error::RSError;
 

@@ -1,7 +1,7 @@
 use crate::algorithm::hs::error::HSError;
-use crate::algorithm::hs::hs_private_params::HSPrivateParams;
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::modules::key::{JwkPrivateParams, JwkType};
+use crate::modules::params::models::oct::oct_private_params::OctPrivateParams;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use digest::KeyInit;
@@ -79,13 +79,13 @@ where D : EagerHash,
     }
 }
 
-impl<D> TryFrom<HSPrivateParams> for HSPrivate<D>
+impl<D> TryFrom<OctPrivateParams> for HSPrivate<D>
 where
     D: EagerHash,
 {
     type Error = HSError;
 
-    fn try_from(value: HSPrivateParams) -> Result<Self, Self::Error> {
+    fn try_from(value: OctPrivateParams) -> Result<Self, Self::Error> {
         let k = BASE64_URL_SAFE_NO_PAD.decode(value.k)
             .map_err(HSError::FailedToBase64DecodeK)?;
 
@@ -93,14 +93,14 @@ where
     }
 }
 
-impl<D> TryInto<HSPrivateParams> for HSPrivate<D>
+impl<D> TryInto<OctPrivateParams> for HSPrivate<D>
 where
     D: EagerHash,
 {
     type Error = Infallible;
 
-    fn try_into(self) -> Result<HSPrivateParams, Self::Error> {
-        Ok(HSPrivateParams {
+    fn try_into(self) -> Result<OctPrivateParams, Self::Error> {
+        Ok(OctPrivateParams {
             k: BASE64_URL_SAFE_NO_PAD.encode(self.key)
         })
     }
@@ -118,7 +118,7 @@ where
 impl<D> JwkPrivateParams for HSPrivate<D>
 where D : EagerHash,
 {
-    type PrivateParams = HSPrivateParams;
+    type PrivateParams = OctPrivateParams;
 }
 
 #[cfg(test)]

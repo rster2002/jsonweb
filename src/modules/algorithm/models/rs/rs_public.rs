@@ -1,8 +1,8 @@
 use crate::algorithm::JwAlgVerify;
 use crate::algorithm::rs::error::RSError;
 use crate::algorithm::rs::rs_private::RSPrivate;
-use crate::algorithm::rs::rs_public_params::RSPublicParams;
 use crate::modules::key::{JwkPublicParams, JwkType};
+use crate::modules::params::models::rsa::rsa_public_params::RSAPublicParams;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use const_oid::AssociatedOid;
@@ -44,13 +44,13 @@ where D : Digest + AssociatedOid,
     }
 }
 
-impl<D> TryFrom<RSPublicParams> for RSPublic<D>
+impl<D> TryFrom<RSAPublicParams> for RSPublic<D>
 where
     D: AssociatedOid + Digest,
 {
     type Error = RSError;
 
-    fn try_from(value: RSPublicParams) -> Result<Self, Self::Error> {
+    fn try_from(value: RSAPublicParams) -> Result<Self, Self::Error> {
         let n = BASE64_URL_SAFE_NO_PAD
             .decode(value.n)
             .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
@@ -73,17 +73,17 @@ where
     }
 }
 
-impl<D> TryInto<RSPublicParams> for RSPublic<D>
+impl<D> TryInto<RSAPublicParams> for RSPublic<D>
 where
     D: AssociatedOid + Digest,
 {
     type Error = RSError;
 
-    fn try_into(self) -> Result<RSPublicParams, Self::Error> {
+    fn try_into(self) -> Result<RSAPublicParams, Self::Error> {
         let n = BASE64_URL_SAFE_NO_PAD.encode(self.public_key.n().to_be_bytes());
         let e = BASE64_URL_SAFE_NO_PAD.encode(self.public_key.e_bytes());
 
-        Ok(RSPublicParams {
+        Ok(RSAPublicParams {
             n,
             e,
         })
@@ -102,7 +102,7 @@ where
 impl<D> JwkPublicParams for RSPublic<D>
 where D : Digest + AssociatedOid,
 {
-    type PublicParams = RSPublicParams;
+    type PublicParams = RSAPublicParams;
 }
 
 impl<D> From<RSPrivate<D>> for RSPublic<D>

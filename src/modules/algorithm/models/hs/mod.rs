@@ -1,8 +1,7 @@
 mod hs_private;
-mod hs_private_params;
 
 pub use hs_private::HSPrivate;
-pub use hs_private_params::HSPrivateParams;
+pub use crate::modules::params::models::oct::oct_private_params::OctPrivateParams;
 
 #[cfg(feature = "rand")]
 use rand::RngCore;

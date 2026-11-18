@@ -1,7 +1,8 @@
-use crate::algorithm::es::{ESError, ESPrivateParams, ESPublic, ESPublicParams};
+use crate::algorithm::es::{ESError, ESPublic};
 use crate::algorithm::models::es::es_private::ESPrivate;
 use crate::algorithm::JwAlg;
 use crate::modules::key::{JwkPrivateParams, JwkPublicParams};
+use crate::modules::params::ec::{ECPrivateParams, ECPublicParams};
 
 // Private
 pub type ES256Private = ESPrivate<p256::NistP256>;
@@ -12,36 +13,36 @@ impl JwAlg for ES256Private {
     }
 }
 
-impl TryFrom<ESPrivateParams> for ES256Private {
+impl TryFrom<ECPrivateParams> for ES256Private {
     type Error = ESError;
 
-    fn try_from(value: ESPrivateParams) -> Result<Self, Self::Error> {
+    fn try_from(value: ECPrivateParams) -> Result<Self, Self::Error> {
         Self::from_private_parameters(value, "P-256")
     }
 }
 
-impl TryInto<ESPrivateParams> for ES256Private {
+impl TryInto<ECPrivateParams> for ES256Private {
     type Error = ESError;
 
-    fn try_into(self) -> Result<ESPrivateParams, Self::Error> {
+    fn try_into(self) -> Result<ECPrivateParams, Self::Error> {
         Self::into_private_parameters(&self.signing_key, "P-256")
     }
 }
 
-impl TryInto<ESPublicParams> for ES256Private {
+impl TryInto<ECPublicParams> for ES256Private {
     type Error = ESError;
 
-    fn try_into(self) -> Result<ESPublicParams, Self::Error> {
+    fn try_into(self) -> Result<ECPublicParams, Self::Error> {
         ESPublic::into_public_parameters(self.signing_key.verifying_key(), "P-256")
     }
 }
 
 impl JwkPrivateParams for ES256Private {
-    type PrivateParams = ESPrivateParams;
+    type PrivateParams = ECPrivateParams;
 }
 
 impl JwkPublicParams for ES256Private {
-    type PublicParams = ESPublicParams;
+    type PublicParams = ECPublicParams;
 }
 
 // Public
@@ -53,22 +54,22 @@ impl JwAlg for ES256Public {
     }
 }
 
-impl TryFrom<ESPublicParams> for ES256Public {
+impl TryFrom<ECPublicParams> for ES256Public {
     type Error = ESError;
 
-    fn try_from(value: ESPublicParams) -> Result<Self, Self::Error> {
+    fn try_from(value: ECPublicParams) -> Result<Self, Self::Error> {
         Self::from_public_parameters(value, "P-256")
     }
 }
 
-impl TryInto<ESPublicParams> for ES256Public {
+impl TryInto<ECPublicParams> for ES256Public {
     type Error = ESError;
 
-    fn try_into(self) -> Result<ESPublicParams, Self::Error> {
+    fn try_into(self) -> Result<ECPublicParams, Self::Error> {
         Self::into_public_parameters(&self.verifying_key, "P-256")
     }
 }
 
 impl JwkPublicParams for ES256Public {
-    type PublicParams = ESPublicParams;
+    type PublicParams = ECPublicParams;
 }

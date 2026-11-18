@@ -1,4 +1,4 @@
-use crate::algorithm::es::{ESError, ESPrivateParams, ESPublicParams};
+use crate::algorithm::es::{ESError, ECPrivateParams, ECPublicParams};
 use crate::algorithm::models::es::es_private::ESPrivate;
 use crate::algorithm::models::es::es_public::ESPublic;
 use crate::algorithm::JwAlg;
@@ -13,36 +13,36 @@ impl JwAlg for ES384Private {
     }
 }
 
-impl TryFrom<ESPrivateParams> for ES384Private {
+impl TryFrom<ECPrivateParams> for ES384Private {
     type Error = ESError;
 
-    fn try_from(value: ESPrivateParams) -> Result<Self, Self::Error> {
+    fn try_from(value: ECPrivateParams) -> Result<Self, Self::Error> {
         Self::from_private_parameters(value, "P-384")
     }
 }
 
-impl TryInto<ESPrivateParams> for ES384Private {
+impl TryInto<ECPrivateParams> for ES384Private {
     type Error = ESError;
 
-    fn try_into(self) -> Result<ESPrivateParams, Self::Error> {
+    fn try_into(self) -> Result<ECPrivateParams, Self::Error> {
         Self::into_private_parameters(&self.signing_key, "P-384")
     }
 }
 
 impl JwkPrivateParams for ES384Private {
-    type PrivateParams = ESPrivateParams;
+    type PrivateParams = ECPrivateParams;
 }
 
-impl TryInto<ESPublicParams> for ES384Private {
+impl TryInto<ECPublicParams> for ES384Private {
     type Error = ESError;
 
-    fn try_into(self) -> Result<ESPublicParams, Self::Error> {
+    fn try_into(self) -> Result<ECPublicParams, Self::Error> {
         ESPublic::into_public_parameters(self.signing_key.verifying_key(), "P-384")
     }
 }
 
 impl JwkPublicParams for ES384Private {
-    type PublicParams = ESPublicParams;
+    type PublicParams = ECPublicParams;
 }
 
 // Public
@@ -54,22 +54,22 @@ impl JwAlg for ES384Public {
     }
 }
 
-impl TryFrom<ESPublicParams> for ES384Public {
+impl TryFrom<ECPublicParams> for ES384Public {
     type Error = ESError;
 
-    fn try_from(value: ESPublicParams) -> Result<Self, Self::Error> {
+    fn try_from(value: ECPublicParams) -> Result<Self, Self::Error> {
         Self::from_public_parameters(value, "P-384")
     }
 }
 
-impl TryInto<ESPublicParams> for ES384Public {
+impl TryInto<ECPublicParams> for ES384Public {
     type Error = ESError;
 
-    fn try_into(self) -> Result<ESPublicParams, Self::Error> {
+    fn try_into(self) -> Result<ECPublicParams, Self::Error> {
         Self::into_public_parameters(&self.verifying_key, "P-384")
     }
 }
 
 impl JwkPublicParams for ES384Public {
-    type PublicParams = ESPublicParams;
+    type PublicParams = ECPublicParams;
 }
