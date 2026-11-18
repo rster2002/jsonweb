@@ -1,5 +1,5 @@
 #[derive(Debug, thiserror::Error)]
-pub enum PublicSetError {
+pub enum PublicEnumError {
     #[error("Failed to verify")]
     FailedToVerify,
 

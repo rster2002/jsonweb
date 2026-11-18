@@ -1,10 +1,10 @@
-mod private_set_error;
-mod public_set_error;
+mod private_enum_error;
+mod public_enum_error;
 
-pub mod any;
+pub mod set;
 
-pub use private_set_error::PrivateSetError;
-pub use public_set_error::PublicSetError;
+pub use private_enum_error::PrivateEnumError;
+pub use public_enum_error::PublicEnumError;
 
 pub mod none_algorithm;
 

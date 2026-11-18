@@ -1,5 +1,4 @@
 use crate::algorithm::JwAlgVerify;
-use crate::algorithm::traits::jw_alg::JwAlg;
 
 pub trait JwAlgSign: JwAlgVerify {
     type Error: std::error::Error;

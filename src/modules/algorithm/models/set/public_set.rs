@@ -1,15 +1,15 @@
 use crate::algorithm::{HandlesJwAlg, JwAlgVerify, PartialJwAlgVerify};
-use crate::algorithm::any::error::AnyError;
+use crate::algorithm::set::error::AnyError;
 
 /// Represents a set of the same algorithm that can handle any of the provided algorithms.
-pub struct AnyPublic<A>
+pub struct PublicSet<A>
 where
     A: HandlesJwAlg + JwAlgVerify,
 {
     algorithms: Vec<A>,
 }
 
-impl<A> HandlesJwAlg for AnyPublic<A>
+impl<A> HandlesJwAlg for PublicSet<A>
 where
     A: HandlesJwAlg + JwAlgVerify,
 {
@@ -18,7 +18,7 @@ where
     }
 }
 
-impl<A> PartialJwAlgVerify for AnyPublic<A>
+impl<A> PartialJwAlgVerify for PublicSet<A>
 where
     A: HandlesJwAlg + JwAlgVerify,
 {

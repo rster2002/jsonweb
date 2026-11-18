@@ -26,31 +26,31 @@ macro_rules! private_alg_enum {
             }
 
             impl crate::algorithm::JwAlgVerify for $i {
-                type Error = crate::algorithm::PrivateSetError;
+                type Error = crate::algorithm::PrivateEnumError;
 
-                fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, crate::algorithm::PrivateSetError> {
+                fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, crate::algorithm::PrivateEnumError> {
                     match self {
-                        $($i::$j(v) => v.verify(payload, signature).map_err(|_| crate::algorithm::PrivateSetError::FailedToVerify),)+
+                        $($i::$j(v) => v.verify(payload, signature).map_err(|_| crate::algorithm::PrivateEnumError::FailedToVerify),)+
                     }
                 }
             }
 
             impl crate::algorithm::JwAlgSign for $i {
-                type Error = crate::algorithm::PrivateSetError;
+                type Error = crate::algorithm::PrivateEnumError;
 
-                fn sign(&self, payload: &[u8]) -> Result<Vec<u8>, crate::algorithm::PrivateSetError> {
+                fn sign(&self, payload: &[u8]) -> Result<Vec<u8>, crate::algorithm::PrivateEnumError> {
                     match self {
-                        $($i::$j(v) => v.sign(payload).map_err(|_| crate::algorithm::PrivateSetError::FailedToSign),)+
+                        $($i::$j(v) => v.sign(payload).map_err(|_| crate::algorithm::PrivateEnumError::FailedToSign),)+
                     }
                 }
             }
 
             impl TryFrom<[< $i Params >]> for $i {
-                type Error = crate::algorithm::PrivateSetError;
+                type Error = crate::algorithm::PrivateEnumError;
 
                 fn try_from(value: [< $i Params >]) -> Result<$i, Self::Error> {
                     Ok(match value {
-                        $([< $i Params >]::$j(v) => $i::$j($j::try_from(v).map_err(|e| crate::algorithm::PrivateSetError::FailedToParse(e.to_string()))?),)+
+                        $([< $i Params >]::$j(v) => $i::$j($j::try_from(v).map_err(|e| crate::algorithm::PrivateEnumError::FailedToParse(e.to_string()))?),)+
                     })
                 }
             }

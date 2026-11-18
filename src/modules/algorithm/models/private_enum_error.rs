@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum PrivateSetError {
+pub enum PrivateEnumError {
     #[error("Failed to sign using set")]
     FailedToSign,
     

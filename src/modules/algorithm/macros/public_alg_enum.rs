@@ -26,21 +26,21 @@ macro_rules! public_alg_enum {
             }
 
             impl crate::algorithm::JwAlgVerify for $i {
-                type Error = crate::algorithm::PublicSetError;
+                type Error = crate::algorithm::PublicEnumError;
 
-                fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, crate::algorithm::PublicSetError> {
+                fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, crate::algorithm::PublicEnumError> {
                     match self {
-                        $($i::$j(v) => v.verify(payload, signature).map_err(|_| crate::algorithm::PublicSetError::FailedToVerify),)+
+                        $($i::$j(v) => v.verify(payload, signature).map_err(|_| crate::algorithm::PublicEnumError::FailedToVerify),)+
                     }
                 }
             }
 
             impl TryFrom<[< $i Params >]> for $i {
-                type Error = crate::algorithm::PublicSetError;
+                type Error = crate::algorithm::PublicEnumError;
 
                 fn try_from(value: [< $i Params >]) -> Result<$i, Self::Error> {
                     Ok(match value {
-                        $([< $i Params >]::$j(v) => $i::$j($j::try_from(v).map_err(|e| crate::algorithm::PublicSetError::FailedToParse(e.to_string()))?),)+
+                        $([< $i Params >]::$j(v) => $i::$j($j::try_from(v).map_err(|e| crate::algorithm::PublicEnumError::FailedToParse(e.to_string()))?),)+
                     })
                 }
             }
