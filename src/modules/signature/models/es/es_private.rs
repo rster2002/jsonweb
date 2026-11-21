@@ -1,112 +1,21 @@
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::modules::key::JwkType;
-use crate::modules::params::ec::ECPrivateParams;
-use base64::Engine;
-use base64::prelude::BASE64_URL_SAFE_NO_PAD;
-use ecdsa::elliptic_curve::sec1::{FromSec1Point, ToSec1Point};
-use ecdsa::elliptic_curve::{
-    AffinePoint, CurveArithmetic, FieldBytesSize, sec1,
-};
+use crate::modules::signature::es::ESError;
+use ecdsa::elliptic_curve::CurveArithmetic;
 use ecdsa::signature::{Signer, Verifier};
 use ecdsa::{EcdsaCurve, Signature, SigningKey};
-use std::convert::Infallible;
-use elliptic_curve::sec1::ModulusSize;
 use elliptic_curve::SecretKey;
-use crate::modules::signature::es::{ESError, ESPublic};
+use std::convert::Infallible;
 
 #[derive(Debug, Clone)]
 pub struct ESPrivate<C>
 where
     C: CurveArithmetic + EcdsaCurve + ecdsa::DigestAlgorithm,
-    // AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-    // FieldBytesSize<C>: sec1::ModulusSize,
+// AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+// FieldBytesSize<C>: sec1::ModulusSize,
 {
     pub(crate) signing_key: SigningKey<C>,
 }
-
-// impl<C> ESPrivate<C>
-// where
-//     C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
-// {
-//     pub(crate) fn from_private_parameters(
-//         parameters: ECPrivateParams,
-//         crv: &'static str,
-//     ) -> Result<Self, ESError> {
-//         // if crv != parameters.crv {
-//         //     return Err(ESError::MismatchedCurve(parameters.crv, crv));
-//         // }
-//         //
-//         // let expected_size = <C::FieldBytesSize as Unsigned>::USIZE;
-//         //
-//         // let d = BASE64_URL_SAFE_NO_PAD
-//         //     .decode(parameters.d)
-//         //     .map_err(|e| ESError::FailedToDecodeBase64D(e))?;
-//         //
-//         // if d.len() != expected_size {
-//         //     return Err(ESError::InvalidDSize(expected_size));
-//         // }
-//         //
-//         // let x = BASE64_URL_SAFE_NO_PAD
-//         //     .decode(parameters.x)
-//         //     .map_err(|e| ESError::FailedToDecodeBase64X(e))?;
-//         //
-//         // if x.len() != expected_size {
-//         //     return Err(ESError::InvalidXSize(expected_size));
-//         // }
-//         //
-//         // let y = BASE64_URL_SAFE_NO_PAD
-//         //     .decode(parameters.y)
-//         //     .map_err(|e| ESError::FailedToDecodeBase64Y(e))?;
-//         //
-//         // if y.len() != expected_size {
-//         //     return Err(ESError::InvalidYSize(expected_size));
-//         // }
-//         //
-//         // let field_bytes = FieldBytes::<C>::try_from(d)
-//         //     .map_err(|_| ESError::FailedToRepresentD)?;
-//         //
-//         // let signing_key = SigningKey::from_bytes(&field_bytes)
-//         //     .map_err(|_| ESError::FailedToRepresentD)?;
-//         //
-//         // let verifying_key = signing_key.verifying_key();
-//         //
-//         // let sec1_point = verifying_key.to_sec1_point(false);
-//         // let p_x = sec1_point.x().ok_or(ESError::MissingSec1X)?;
-//         // let p_y = sec1_point.y().ok_or(ESError::MissingSec1Y)?;
-//         //
-//         // if p_x.as_ref() != x {
-//         //     return Err(ESError::MismatchedX);
-//         // }
-//         //
-//         // if p_y.as_ref() != y {
-//         //     return Err(ESError::MismatchedY);
-//         // }
-//         //
-//         // Ok(Self { signing_key })
-//
-//         todo!()
-//     }
-//
-//     // pub(crate) fn into_private_parameters(
-//     //     signing_key: &SigningKey<C>,
-//     //     crv: impl Into<String>,
-//     // ) -> Result<ECPrivateParams, ESError> {
-//     //     let public_params = ESPublic::into_public_parameters(signing_key.verifying_key(), crv)?;
-//     //
-//     //     // TODO check: Missing "The length of this octet string
-//     //     //    MUST be ceiling(log-base-2(n)/8) octets (where n is the order of the
-//     //     //    curve)."
-//     //
-//     //     let d = signing_key.to_bytes();
-//     //
-//     //     Ok(ECPrivateParams {
-//     //         crv: public_params.crv,
-//     //         x: public_params.x,
-//     //         y: public_params.y,
-//     //         d: BASE64_URL_SAFE_NO_PAD.encode(d),
-//     //     })
-//     // }
-// }
 
 impl<C> JwAlgVerify for ESPrivate<C>
 where

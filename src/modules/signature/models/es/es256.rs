@@ -28,9 +28,7 @@ impl TryInto<ECPrivateParams> for ES256Private {
     type Error = ESError;
 
     fn try_into(self) -> Result<ECPrivateParams, Self::Error> {
-        // Ok(ECPrivateParams::from(self.signing_key))
-        
-        // Self::into_private_parameters(&self.signing_key, "P-256")
+        Ok(ECPrivateParams::from_secret_key(&self.signing_key.into(), "P-256")?)
     }
 }
 
@@ -38,7 +36,7 @@ impl TryInto<ECPublicParams> for ES256Private {
     type Error = ESError;
 
     fn try_into(self) -> Result<ECPublicParams, Self::Error> {
-        ESPublic::into_public_parameters(self.signing_key.verifying_key(), "P-256")
+        Ok(ECPublicParams::from_public_key(&self.signing_key.verifying_key().into(), "P-256")?)
     }
 }
 
@@ -62,8 +60,12 @@ impl JwAlg for ES256Public {
 impl TryFrom<ECPublicParams> for ES256Public {
     type Error = ESError;
 
-    fn try_from(value: ECPublicParams) -> Result<Self, Self::Error> {
-        Self::from_public_parameters(value, "P-256")
+    fn try_from(params: ECPublicParams) -> Result<Self, Self::Error> {
+        if params.crv != "P-256" {
+            return Err(ESError::MismatchedCurve(params.crv, "P-256".to_string()));
+        }
+
+        Ok(ESPublic::from(params.public_key()?))
     }
 }
 
@@ -71,7 +73,7 @@ impl TryInto<ECPublicParams> for ES256Public {
     type Error = ESError;
 
     fn try_into(self) -> Result<ECPublicParams, Self::Error> {
-        Self::into_public_parameters(&self.verifying_key, "P-256")
+        Ok(ECPublicParams::from_public_key(&self.verifying_key.into(), "P-256")?)
     }
 }
 

@@ -15,6 +15,30 @@ pub struct ECPublicParams {
 }
 
 impl ECPublicParams {
+    /// Create a new ECPublicParams from a public key.
+    pub fn from_public_key<C>(public_key: &PublicKey<C>, crv: impl Into<String>) -> Result<Self, ECParamsError>
+    where C : Curve + CurveArithmetic,
+          AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+          FieldBytesSize<C>: ModulusSize,
+    {
+        Self::from_sec1_point::<C>(&public_key.to_sec1_point(false), crv)
+    }
+
+    /// Create a new ECPublicParams from a Sec1 Point.
+    pub fn from_sec1_point<C>(sec1_point: &Sec1Point<C>, crv: impl Into<String>) -> Result<Self, ECParamsError>
+    where C : Curve + CurveArithmetic,
+          FieldBytesSize<C>: ModulusSize,
+    {
+        let x = sec1_point.x().ok_or(ECParamsError::MissingSec1X)?;
+        let y = sec1_point.y().ok_or(ECParamsError::MissingSec1Y)?;
+
+        Ok(ECPublicParams {
+            crv: crv.into(),
+            x: BASE64_URL_SAFE_NO_PAD.encode(x),
+            y: BASE64_URL_SAFE_NO_PAD.encode(y),
+        })
+    }
+
     /// Return the public Sec1 Point for these params.
     pub fn sec1_point<C>(&self) -> Result<Sec1Point<C>, ECParamsError>
     where C : Curve + CurveArithmetic,
@@ -71,26 +95,26 @@ impl ECPublicParams {
     }
 }
 
-impl<C, S> TryFrom<(&PublicKey<C>, S)> for ECPublicParams
-where C : Curve + CurveArithmetic,
-      AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-      FieldBytesSize<C>: ModulusSize,
-    S: Into<String>
-{
-    type Error = ECParamsError;
-
-    fn try_from((key, crv): (&PublicKey<C>, S)) -> Result<Self, Self::Error> {
-        let sec1_point = key.to_sec1_point(false);
-        let x = sec1_point.x().ok_or(ECParamsError::MissingSec1X)?;
-        let y = sec1_point.y().ok_or(ECParamsError::MissingSec1Y)?;
-
-        Ok(ECPublicParams {
-            crv: crv.into(),
-            x: BASE64_URL_SAFE_NO_PAD.encode(x),
-            y: BASE64_URL_SAFE_NO_PAD.encode(y),
-        })
-    }
-}
+// impl<C, S> TryFrom<(&PublicKey<C>, S)> for ECPublicParams
+// where C : Curve + CurveArithmetic,
+//       AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+//       FieldBytesSize<C>: ModulusSize,
+//     S: Into<String>
+// {
+//     type Error = ECParamsError;
+//
+//     fn try_from((key, crv): (&PublicKey<C>, S)) -> Result<Self, Self::Error> {
+//         let sec1_point = key.to_sec1_point(false);
+//         let x = sec1_point.x().ok_or(ECParamsError::MissingSec1X)?;
+//         let y = sec1_point.y().ok_or(ECParamsError::MissingSec1Y)?;
+//
+//         Ok(ECPublicParams {
+//             crv: crv.into(),
+//             x: BASE64_URL_SAFE_NO_PAD.encode(x),
+//             y: BASE64_URL_SAFE_NO_PAD.encode(y),
+//         })
+//     }
+// }
 
 impl From<ECPrivateParams> for ECPublicParams {
     fn from(value: ECPrivateParams) -> Self {
