@@ -1,0 +1,151 @@
+
+use crate::modules::key::{JwkPrivateParams, JwkType};
+use base64::Engine;
+use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+use digest::KeyInit;
+use digest::block_api::EagerHash;
+use hmac::{Hmac, Mac};
+use rand::RngCore;
+use std::convert::Infallible;
+use std::fmt::{Debug, Formatter};
+use crate::modules::params::oct::OctPrivateParams;
+use crate::modules::signature::hs::error::HSError;
+use crate::modules::signature::{JwSign, JwVerify};
+
+#[derive(Clone)]
+pub struct HSPrivate<D>
+where
+    D: EagerHash,
+{
+    key: Vec<u8>,
+    hmac: Hmac<D>,
+}
+
+impl<D> HSPrivate<D>
+where
+    D: EagerHash,
+{
+    pub fn new(key: &[u8]) -> Result<Self, HSError> {
+        Ok(HSPrivate {
+            key: key.to_vec(),
+            hmac: Hmac::<D>::new_from_slice(key).map_err(|_| HSError::InvalidLength)?,
+        })
+    }
+
+    #[cfg(feature = "rand")]
+    pub fn rand() -> Result<Self, HSError> {
+        let mut rng = rand::thread_rng();
+        let mut slice = [0u8; 32];
+        rng.fill_bytes(&mut slice);
+
+        HSPrivate::new(&slice)
+    }
+}
+
+impl<D> JwVerify for HSPrivate<D>
+where D: EagerHash,
+{
+    type Error = Infallible;
+
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Infallible> {
+        let mut inner = self.hmac.clone();
+        inner.update(payload);
+
+        let finalized = inner.finalize()
+            .into_bytes()
+            .to_vec();
+
+        Ok(signature == finalized)
+    }
+}
+
+impl<D> JwSign for HSPrivate<D>
+where D : EagerHash,
+{
+    type Error = Infallible;
+
+    fn sign(&self, payload: &[u8]) -> Result<Vec<u8>, Infallible> {
+        let mut inner = self.hmac.clone();
+        inner.update(payload);
+
+        Ok(inner.finalize().into_bytes().to_vec())
+    }
+}
+
+impl<D> Debug for HSPrivate<D>
+where D : EagerHash,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "HSPrivate(..)")
+    }
+}
+
+impl<D> TryFrom<OctPrivateParams> for HSPrivate<D>
+where
+    D: EagerHash,
+{
+    type Error = HSError;
+
+    fn try_from(value: OctPrivateParams) -> Result<Self, Self::Error> {
+        let k = BASE64_URL_SAFE_NO_PAD.decode(value.k)
+            .map_err(HSError::FailedToBase64DecodeK)?;
+
+        Ok(HSPrivate::new(&k)?)
+    }
+}
+
+impl<D> TryInto<OctPrivateParams> for HSPrivate<D>
+where
+    D: EagerHash,
+{
+    type Error = Infallible;
+
+    fn try_into(self) -> Result<OctPrivateParams, Self::Error> {
+        Ok(OctPrivateParams {
+            k: BASE64_URL_SAFE_NO_PAD.encode(self.key)
+        })
+    }
+}
+
+impl<D> JwkType for HSPrivate<D>
+where
+    D: EagerHash,
+{
+    fn kty() -> impl AsRef<str> {
+        "oct"
+    }
+}
+
+impl<D> JwkPrivateParams for HSPrivate<D>
+where D : EagerHash,
+{
+    type PrivateParams = OctPrivateParams;
+}
+
+#[cfg(test)]
+mod tests {
+    use base64::Engine;
+    use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+    use crate::modules::signature::hs::HS256Private;
+    use crate::modules::signature::{JwSign, JwVerify};
+
+    #[test]
+    fn hs256_algorithm_works_as_expected() {
+        let payload = b"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJoaiI6dHJ1ZX0";
+        let alg = HS256Private::new("qwed".as_ref()).unwrap();
+
+        let signature_bytes = alg.sign(payload).unwrap();
+        let signature_string = BASE64_URL_SAFE_NO_PAD.encode(&signature_bytes);
+
+        assert_eq!(signature_string, "AeQU9YyCnBlrJwtd1PVmGW3apn6kQ6yi_U4qT9o0vkQ");
+
+        let verify = alg.verify(payload, &signature_bytes).unwrap();
+
+        assert!(verify);
+    }
+
+    #[test]
+    fn hs256_can_be_generated_randomly() {
+        // HS256Private::rand().unwrap();
+    }
+}
