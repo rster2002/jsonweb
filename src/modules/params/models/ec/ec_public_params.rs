@@ -95,27 +95,6 @@ impl ECPublicParams {
     }
 }
 
-// impl<C, S> TryFrom<(&PublicKey<C>, S)> for ECPublicParams
-// where C : Curve + CurveArithmetic,
-//       AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-//       FieldBytesSize<C>: ModulusSize,
-//     S: Into<String>
-// {
-//     type Error = ECParamsError;
-//
-//     fn try_from((key, crv): (&PublicKey<C>, S)) -> Result<Self, Self::Error> {
-//         let sec1_point = key.to_sec1_point(false);
-//         let x = sec1_point.x().ok_or(ECParamsError::MissingSec1X)?;
-//         let y = sec1_point.y().ok_or(ECParamsError::MissingSec1Y)?;
-//
-//         Ok(ECPublicParams {
-//             crv: crv.into(),
-//             x: BASE64_URL_SAFE_NO_PAD.encode(x),
-//             y: BASE64_URL_SAFE_NO_PAD.encode(y),
-//         })
-//     }
-// }
-
 impl From<ECPrivateParams> for ECPublicParams {
     fn from(value: ECPrivateParams) -> Self {
         ECPublicParams {

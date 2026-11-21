@@ -20,34 +20,6 @@ where
     _p: PhantomData<D>,
 }
 
-impl<D> RSPrivate<D>
-where
-    D: Digest + AssociatedOid,
-{
-    // /// Create a new RSA private key using the default size of 4096 bits.
-    // #[cfg(feature = "rand")]
-    // pub fn rand() -> Result<Self, rsa::Error> {
-    //     Self::rand_size(4096)
-    // }
-
-    // /// Create a new RSA private key with the provided size in bits.
-    // #[cfg(feature = "rand")]
-    // pub fn rand_size(size: usize) -> Result<Self, rsa::Error> {
-    //     let mut rng = rand::thread_rng();
-    //     // Ok(RSPrivate::from(SigningKey::random(&mut rng, size)?))
-    // }
-
-    // #[cfg(feature = "pkcs1")]
-    // pub fn to_pkcs1_der_bytes(&self) -> Result<Vec<u8>, rsa::Error> {
-    //     Ok(self.private_key.to_pkcs1_der()?.to_bytes().to_vec())
-    // }
-
-    // #[cfg(feature = "pkcs1")]
-    // pub fn from_pkcs1_der_bytes(bytes: &[u8]) -> Result<Self, rsa::Error> {
-    //     Ok(RSPrivate::from(RS::from_pkcs1_der(bytes)?))
-    // }
-}
-
 impl<D> JwAlgVerify for RSPrivate<D>
 where
     D: Digest + AssociatedOid,
@@ -96,76 +68,7 @@ where
     type Error = RSError;
 
     fn try_from(value: RSAPrivateParams) -> Result<Self, RSError> {
-        let n = BASE64_URL_SAFE_NO_PAD
-            .decode(value.n)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(RSError::FailedToBase64DecodeN)?
-            .map_err(|e| RSError::FailedToRepresentN(rsa::Error::Decode(e)))?;
-
-        let p = BASE64_URL_SAFE_NO_PAD
-            .decode(value.p)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(RSError::FailedToBase64DecodeP)?
-            .map_err(|e| RSError::FailedToRepresentP(rsa::Error::Decode(e)))?;
-
-        let q = BASE64_URL_SAFE_NO_PAD
-            .decode(value.q)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeQ(e))?
-            .map_err(|e| RSError::FailedToRepresentQ(rsa::Error::Decode(e)))?;
-
-        let e = BASE64_URL_SAFE_NO_PAD
-            .decode(value.e)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeE(e))?
-            .map_err(|e| RSError::FailedToRepresentE(rsa::Error::Decode(e)))?;
-
-        let dp = BASE64_URL_SAFE_NO_PAD
-            .decode(value.dp)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeDP(e))?
-            .map_err(|e| RSError::FailedToRepresentDP(rsa::Error::Decode(e)))?;
-
-        let dq = BASE64_URL_SAFE_NO_PAD
-            .decode(value.dq)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeDQ(e))?
-            .map_err(|e| RSError::FailedToRepresentDQ(rsa::Error::Decode(e)))?;
-
-        let qi = BASE64_URL_SAFE_NO_PAD
-            .decode(value.qi)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeQI(e))?
-            .map_err(|e| RSError::FailedToRepresentQI(rsa::Error::Decode(e)))?;
-
-        let mut private_key = PrivateKey::from_p_q(p, q, e)
-            .map_err(|e| RSError::FailedToCreatePrivateKeyFromParameters(e))?;
-
-        private_key
-            .precompute()
-            .map_err(|e| RSError::FailedToPrecompute(e))?;
-
-        if n != private_key.n().as_ref() {
-            return Err(RSError::MismatchedN);
-        }
-
-        if dp != private_key.dp().ok_or(RSError::MissingPrecompute)? {
-            return Err(RSError::MismatchedDP);
-        }
-
-        if dq != private_key.dq().ok_or(RSError::MissingPrecompute)? {
-            return Err(RSError::MismatchedDQ);
-        }
-
-        if qi
-            != private_key
-                .crt_coefficient()
-                .ok_or(RSError::MissingPrecompute)?
-        {
-            return Err(RSError::MismatchedQI);
-        }
-
-        Ok(Self::from(private_key))
+        Ok(Self::from(value.private_key()?))
     }
 }
 
@@ -175,61 +78,8 @@ where
 {
     type Error = RSError;
 
-    fn try_into(mut self) -> Result<RSAPrivateParams, RSError> {
-        self.private_key
-            .precompute()
-            .map_err(|e| RSError::FailedToPrecompute(e))?;
-
-        let n = BASE64_URL_SAFE_NO_PAD.encode(self.private_key.n_bytes());
-        let e = BASE64_URL_SAFE_NO_PAD.encode(self.private_key.e_bytes());
-        let d = BASE64_URL_SAFE_NO_PAD.encode(self.private_key.d().to_be_bytes());
-        let p = BASE64_URL_SAFE_NO_PAD.encode(
-            self.private_key
-                .p()
-                .ok_or(RSError::MissingPrecompute)?
-                .modulus()
-                .to_be_bytes(),
-        );
-
-        let q = BASE64_URL_SAFE_NO_PAD.encode(
-            self.private_key
-                .q()
-                .ok_or(RSError::MissingPrecompute)?
-                .modulus()
-                .to_be_bytes(),
-        );
-
-        let dp = BASE64_URL_SAFE_NO_PAD.encode(
-            self.private_key
-                .dp()
-                .ok_or(RSError::MissingPrecompute)?
-                .to_be_bytes(),
-        );
-
-        let dq = BASE64_URL_SAFE_NO_PAD.encode(
-            self.private_key
-                .dq()
-                .ok_or(RSError::MissingPrecompute)?
-                .to_be_bytes(),
-        );
-
-        let qi = BASE64_URL_SAFE_NO_PAD.encode(
-            self.private_key
-                .crt_coefficient()
-                .ok_or(RSError::MissingPrecompute)?
-                .to_be_bytes(),
-        );
-
-        Ok(RSAPrivateParams {
-            n,
-            e,
-            d,
-            p,
-            q,
-            dp,
-            dq,
-            qi,
-        })
+    fn try_into(self) -> Result<RSAPrivateParams, RSError> {
+        Ok(RSAPrivateParams::try_from(self.private_key)?)
     }
 }
 
@@ -247,10 +97,7 @@ where
     type Error = RSError;
 
     fn try_into(self) -> Result<RSAPublicParams, Self::Error> {
-        Ok(RSAPublicParams {
-            n: BASE64_URL_SAFE_NO_PAD.encode(self.private_key.n_bytes()),
-            e: BASE64_URL_SAFE_NO_PAD.encode(self.private_key.e_bytes()),
-        })
+        Ok(RSAPublicParams::from_public_key(self.private_key.as_public_key().clone())?)
     }
 }
 

@@ -7,7 +7,7 @@ use digest::Digest;
 use rsa::traits::PublicKeyParts;
 use rsa::{BoxedUint, PublicKey};
 use std::marker::PhantomData;
-use crate::modules::params::rsa::RSAPublicParams;
+use crate::modules::params::rsa::{RSAPrivateParams, RSAPublicParams};
 use crate::modules::signature::rs::{RSError, RSPrivate};
 
 #[derive(Debug, Clone)]
@@ -50,25 +50,18 @@ where
     type Error = RSError;
 
     fn try_from(value: RSAPublicParams) -> Result<Self, Self::Error> {
-        let n = BASE64_URL_SAFE_NO_PAD
-            .decode(value.n)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeN(e))?
-            .map_err(|e| RSError::FailedToRepresentN(rsa::Error::Decode(e)))?;
+        Ok(RSPublic::from(value.public_key()?))
+    }
+}
 
-        let e = BASE64_URL_SAFE_NO_PAD
-            .decode(value.e)
-            .map(|bytes| BoxedUint::from_be_slice(&bytes, (bytes.len() * 8) as u32))
-            .map_err(|e| RSError::FailedToBase64DecodeE(e))?
-            .map_err(|e| RSError::FailedToRepresentE(rsa::Error::Decode(e)))?;
+impl<D> TryFrom<RSAPrivateParams> for RSPublic<D>
+where
+    D: AssociatedOid + Digest,
+{
+    type Error = RSError;
 
-        let public_key = PublicKey::new(n, e)
-            .map_err(|e| RSError::FailedToCreatePublicKeyFromParameters(e))?;
-
-        Ok(RSPublic {
-            public_key,
-            _p: PhantomData,
-        })
+    fn try_from(value: RSAPrivateParams) -> Result<Self, Self::Error> {
+        Ok(RSPublic::from(value.public_key()?))
     }
 }
 
@@ -79,13 +72,7 @@ where
     type Error = RSError;
 
     fn try_into(self) -> Result<RSAPublicParams, Self::Error> {
-        let n = BASE64_URL_SAFE_NO_PAD.encode(self.public_key.n().to_be_bytes());
-        let e = BASE64_URL_SAFE_NO_PAD.encode(self.public_key.e_bytes());
-
-        Ok(RSAPublicParams {
-            n,
-            e,
-        })
+        Ok(RSAPublicParams::from_public_key(self.public_key.clone())?)
     }
 }
 
