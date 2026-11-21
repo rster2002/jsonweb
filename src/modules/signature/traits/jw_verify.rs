@@ -1,5 +1,5 @@
 /// Verify a given signature against a payload using this algorithm.
-pub trait JwAlgVerify {
+pub trait JwVerify {
     type Error: std::error::Error;
 
     /// Verify the given `payload` against the given `signature` using this algorithm. Should return

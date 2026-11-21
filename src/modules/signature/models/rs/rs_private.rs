@@ -1,4 +1,4 @@
-use crate::algorithm::{JwAlgSign, JwAlgVerify};
+
 use crate::modules::key::{JwkPrivateParams, JwkPublicParams, JwkType};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
@@ -9,6 +9,7 @@ use rsa::PrivateKey;
 use std::marker::PhantomData;
 use rsa::traits::{PrivateKeyParts, PublicKeyParts};
 use crate::modules::params::rsa::{RSAPrivateParams, RSAPublicParams};
+use crate::modules::signature::{JwSign, JwVerify};
 use crate::modules::signature::rs::RSError;
 
 #[derive(Debug, Clone)]
@@ -20,7 +21,7 @@ where
     _p: PhantomData<D>,
 }
 
-impl<D> JwAlgVerify for RSPrivate<D>
+impl<D> JwVerify for RSPrivate<D>
 where
     D: Digest + AssociatedOid,
 {
@@ -37,7 +38,7 @@ where
     }
 }
 
-impl<D> JwAlgSign for RSPrivate<D>
+impl<D> JwSign for RSPrivate<D>
 where
     D: Digest + AssociatedOid,
 {
@@ -122,8 +123,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::{JwAlgSign, JwAlgVerify};
     use crate::modules::params::rsa::RSAPrivateParams;
+    use crate::modules::signature::{JwSign, JwVerify};
     use crate::modules::signature::rs::RS256Private;
 
     fn rfc_7517_a_2_rsa_params() -> RSAPrivateParams {

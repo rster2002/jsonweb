@@ -1,8 +1,8 @@
-use crate::algorithm::PartialJwAlgVerify;
 use crate::modules::header::JoseHeader;
 use crate::modules::signature::error::JwsError;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+use crate::modules::signature::PartialJwAlgVerify;
 
 /// Verify a compact JWS signature using the specified algorithm.
 pub fn verify_compact<A>(signature: &str, algorithm: &A) -> Result<(JoseHeader, Vec<u8>), JwsError>

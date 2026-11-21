@@ -1,6 +1,6 @@
-use crate::algorithm::{JwAlg, JwAlgSign};
+use crate::algorithm::{JwAlg};
 use crate::modules::header::JoseHeader;
-use crate::modules::signature::sign_compact;
+use crate::modules::signature::{sign_compact, JwSign};
 use crate::token::{JwtClaims, JwtError};
 use serde::Serialize;
 
@@ -13,7 +13,7 @@ pub fn encode_jwt<T, A>(
 ) -> Result<String, JwtError>
 where
     T: Serialize,
-    A: JwAlg + JwAlgSign,
+    A: JwAlg + JwSign,
 {
     let header = header.clone().or(JoseHeader {
         alg: Some(A::alg().as_ref().to_string()),

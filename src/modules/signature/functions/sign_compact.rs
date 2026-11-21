@@ -1,8 +1,9 @@
-use crate::algorithm::{JwAlg, JwAlgSign};
+use crate::algorithm::{JwAlg};
 use crate::modules::header::JoseHeader;
 use crate::modules::signature::error::JwsError;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+use crate::modules::signature::JwSign;
 
 /// Sign a payload using the specified algorithm.
 pub fn sign_compact<A>(
@@ -11,7 +12,7 @@ pub fn sign_compact<A>(
     algorithm: &A,
 ) -> Result<String, JwsError>
 where
-    A: JwAlg + JwAlgSign,
+    A: JwAlg + JwSign,
 {
     let header = header.or(JoseHeader::from(algorithm));
     let header_bytes = serde_json::to_vec(&header)?;

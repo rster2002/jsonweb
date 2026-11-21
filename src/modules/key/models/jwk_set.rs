@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::algorithm::{JwAlgVerify, HandlesJwAlg};
+use crate::algorithm::{HandlesJwAlg};
 use crate::modules::key::error::JwkError;
 use crate::modules::key::models::jwk::Jwk;
 

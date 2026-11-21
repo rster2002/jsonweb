@@ -1,4 +1,4 @@
-use crate::algorithm::{JwAlgSign, JwAlgVerify};
+
 use crate::modules::key::{JwkPrivateParams, JwkType};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
@@ -10,6 +10,7 @@ use std::convert::Infallible;
 use std::fmt::{Debug, Formatter};
 use crate::modules::params::oct::OctPrivateParams;
 use crate::modules::signature::hs::error::HSError;
+use crate::modules::signature::{JwSign, JwVerify};
 
 #[derive(Clone)]
 pub struct HSPrivate<D>
@@ -41,12 +42,12 @@ where
     }
 }
 
-impl<D> JwAlgVerify for HSPrivate<D>
+impl<D> JwVerify for HSPrivate<D>
 where D: EagerHash,
 {
     type Error = Infallible;
 
-    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Self::Error> {
+    fn verify(&self, payload: &[u8], signature: &[u8]) -> Result<bool, Infallible> {
         let mut inner = self.hmac.clone();
         inner.update(payload);
 
@@ -58,7 +59,7 @@ where D: EagerHash,
     }
 }
 
-impl<D> JwAlgSign for HSPrivate<D>
+impl<D> JwSign for HSPrivate<D>
 where D : EagerHash,
 {
     type Error = Infallible;
@@ -123,11 +124,10 @@ where D : EagerHash,
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::JwAlgSign;
-    use crate::modules::algorithm::JwAlgVerify;
     use base64::Engine;
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use crate::modules::signature::hs::HS256Private;
+    use crate::modules::signature::{JwSign, JwVerify};
 
     #[test]
     fn hs256_algorithm_works_as_expected() {

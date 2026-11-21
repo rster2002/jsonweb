@@ -1,8 +1,7 @@
-use crate::algorithm::PartialJwAlgVerify;
 use crate::modules::header::JoseHeader;
 use crate::token::{JwtClaims, JwtError};
 use serde::de::DeserializeOwned;
-use crate::modules::signature::verify_compact;
+use crate::modules::signature::{verify_compact, PartialJwAlgVerify};
 
 /// Decodes the given JWT token and verifies its signature. It DOES NOT perform any validation on
 /// the claims. Use [JwtClaims::verify] to perform validation.

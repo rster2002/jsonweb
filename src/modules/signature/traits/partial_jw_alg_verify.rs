@@ -1,4 +1,5 @@
-use crate::algorithm::{JwAlg, JwAlgVerify};
+use crate::algorithm::{JwAlg};
+use crate::modules::signature::JwVerify;
 
 /// Trait for algorithms that can potentially verify a signature of the given `alg`.
 pub trait PartialJwAlgVerify {
@@ -10,7 +11,7 @@ pub trait PartialJwAlgVerify {
 }
 
 impl<T, E> PartialJwAlgVerify for T
-where T : JwAlg + JwAlgVerify<Error = E>,
+where T : JwAlg + JwVerify<Error = E>,
     E : std::error::Error,
 {
     type Error = E;

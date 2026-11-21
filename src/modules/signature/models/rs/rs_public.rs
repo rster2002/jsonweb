@@ -1,4 +1,4 @@
-use crate::algorithm::JwAlgVerify;
+
 use crate::modules::key::{JwkPublicParams, JwkType};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
@@ -8,6 +8,7 @@ use rsa::traits::PublicKeyParts;
 use rsa::{BoxedUint, PublicKey};
 use std::marker::PhantomData;
 use crate::modules::params::rsa::{RSAPrivateParams, RSAPublicParams};
+use crate::modules::signature::JwVerify;
 use crate::modules::signature::rs::{RSError, RSPrivate};
 
 #[derive(Debug, Clone)]
@@ -18,7 +19,7 @@ where D : Digest + AssociatedOid,
     _p: PhantomData<D>,
 }
 
-impl<D> JwAlgVerify for RSPublic<D>
+impl<D> JwVerify for RSPublic<D>
 where D : Digest + AssociatedOid,
 {
     type Error = RSError;

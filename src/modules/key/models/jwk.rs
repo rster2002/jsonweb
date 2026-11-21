@@ -1,4 +1,4 @@
-use crate::algorithm::{HandlesJwAlg, JwAlg, JwAlgVerify};
+use crate::algorithm::{HandlesJwAlg, JwAlg};
 use crate::key::JwkPublicParams;
 use crate::modules::key::models::jwk_key_op::JwkKeyOp;
 use crate::modules::key::models::jwt_use::JwkUse;

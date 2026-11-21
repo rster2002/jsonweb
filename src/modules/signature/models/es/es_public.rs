@@ -1,10 +1,11 @@
-use crate::algorithm::JwAlgVerify;
+
 use crate::modules::key::JwkType;
 use ecdsa::elliptic_curve::sec1::{FromSec1Point, ToSec1Point};
 use ecdsa::elliptic_curve::{AffinePoint, CurveArithmetic, FieldBytesSize, sec1};
 use ecdsa::signature::Verifier;
 use ecdsa::{EcdsaCurve, Signature, VerifyingKey};
 use elliptic_curve::PublicKey;
+use crate::modules::signature::JwVerify;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ESPublic<C>
@@ -53,7 +54,7 @@ where
     }
 }
 
-impl<C> JwAlgVerify for ESPublic<C>
+impl<C> JwVerify for ESPublic<C>
 where
     C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
     AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,

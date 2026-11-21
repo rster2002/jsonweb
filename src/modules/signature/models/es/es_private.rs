@@ -1,4 +1,4 @@
-use crate::algorithm::{JwAlgSign, JwAlgVerify};
+
 use crate::modules::key::JwkType;
 use crate::modules::signature::es::ESError;
 use ecdsa::elliptic_curve::CurveArithmetic;
@@ -6,6 +6,7 @@ use ecdsa::signature::{Signer, Verifier};
 use ecdsa::{EcdsaCurve, Signature, SigningKey};
 use elliptic_curve::SecretKey;
 use std::convert::Infallible;
+use crate::modules::signature::{JwSign, JwVerify};
 
 #[derive(Debug, Clone)]
 pub struct ESPrivate<C>
@@ -17,7 +18,7 @@ where
     pub(crate) signing_key: SigningKey<C>,
 }
 
-impl<C> JwAlgVerify for ESPrivate<C>
+impl<C> JwVerify for ESPrivate<C>
 where
     C: CurveArithmetic + EcdsaCurve + ecdsa::DigestAlgorithm,
 {
@@ -32,13 +33,13 @@ where
     }
 }
 
-impl<C> JwAlgSign for ESPrivate<C>
+impl<C> JwSign for ESPrivate<C>
 where
     C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
 {
     type Error = Infallible;
 
-    fn sign(&self, payload: &[u8]) -> Result<Vec<u8>, <Self as JwAlgSign>::Error> {
+    fn sign(&self, payload: &[u8]) -> Result<Vec<u8>, <Self as JwSign>::Error> {
         let signature: Signature<C> = Signer::sign(&self.signing_key, payload);
         Ok(signature.to_vec())
     }
@@ -73,9 +74,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::{JwAlgSign, JwAlgVerify};
     use crate::modules::params::ec::ECPrivateParams;
     use crate::modules::signature::es::ES256Private;
+    use crate::modules::signature::{JwSign, JwVerify};
 
     #[test]
     fn inner_from_params_works() {
