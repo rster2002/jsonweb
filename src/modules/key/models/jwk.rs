@@ -1,11 +1,10 @@
-use crate::algorithm::{JwAlg, JwAlgVerify, HandlesJwAlg};
-use crate::modules::key::{JwkError, JwkPrivateParams, JwkType};
+use crate::algorithm::{HandlesJwAlg, JwAlg, JwAlgVerify};
+use crate::key::JwkPublicParams;
 use crate::modules::key::models::jwk_key_op::JwkKeyOp;
 use crate::modules::key::models::jwt_use::JwkUse;
-use crate::token::JwtError;
+use crate::modules::key::{JwkError, JwkPrivateParams, JwkType};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use crate::key::JwkPublicParams;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Jwk {
@@ -80,9 +79,9 @@ impl TryFrom<Value> for Jwk {
 #[cfg(test)]
 mod tests {
     use serde_json::json;
-    use crate::algorithm::rs::RS256Private;
     use crate::modules::header::JoseHeader;
     use crate::modules::key::Jwk;
+    use crate::modules::signature::rs::RS256Private;
     use crate::modules::signature::sign_compact;
 
     #[test]

@@ -39,9 +39,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::hs::HS256Private;
     use crate::modules::signature::error::JwsError;
     use crate::modules::signature::functions::verify_compact::verify_compact;
+    use crate::modules::signature::models::hs::HS256Private;
 
     #[test]
     fn correct_signature_returns_payload() {

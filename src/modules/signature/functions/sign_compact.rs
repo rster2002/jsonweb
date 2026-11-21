@@ -29,9 +29,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::hs::HS256Private;
     use crate::modules::header::JoseHeader;
     use crate::modules::signature::functions::sign_compact::sign_compact;
+    use crate::modules::signature::models::hs::HS256Private;
     use base64::Engine;
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
     use serde_json::json;

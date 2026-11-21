@@ -4,8 +4,6 @@ mod rs_private;
 
 pub use rs_public::RSPublic;
 pub use rs_private::RSPrivate;
-pub use crate::modules::params::models::rsa::rsa_private_params::RSAPrivateParams;
-pub use crate::modules::params::models::rsa::rsa_public_params::RSAPublicParams;
 
 pub use error::RSError;
 

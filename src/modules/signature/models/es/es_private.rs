@@ -1,4 +1,3 @@
-use crate::algorithm::es::{ESError, ESPublic};
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::modules::key::JwkType;
 use crate::modules::params::ec::ECPrivateParams;
@@ -11,6 +10,7 @@ use ecdsa::elliptic_curve::{
 use ecdsa::signature::{Signer, Verifier};
 use ecdsa::{EcdsaCurve, Signature, SigningKey};
 use std::convert::Infallible;
+use crate::modules::signature::es::{ESError, ESPublic};
 
 #[derive(Debug, Clone)]
 pub struct ESPrivate<C>
@@ -29,12 +29,62 @@ where
     FieldBytesSize<C>: sec1::ModulusSize,
 {
     pub(crate) fn from_private_parameters(
-        params: ECPrivateParams,
+        parameters: ECPrivateParams,
         crv: &'static str,
     ) -> Result<Self, ESError> {
-        Ok(Self {
-            signing_key: ECPrivateParams::try_into_key_crv(params, crv)?,
-        })
+        // if crv != parameters.crv {
+        //     return Err(ESError::MismatchedCurve(parameters.crv, crv));
+        // }
+        //
+        // let expected_size = <C::FieldBytesSize as Unsigned>::USIZE;
+        //
+        // let d = BASE64_URL_SAFE_NO_PAD
+        //     .decode(parameters.d)
+        //     .map_err(|e| ESError::FailedToDecodeBase64D(e))?;
+        //
+        // if d.len() != expected_size {
+        //     return Err(ESError::InvalidDSize(expected_size));
+        // }
+        //
+        // let x = BASE64_URL_SAFE_NO_PAD
+        //     .decode(parameters.x)
+        //     .map_err(|e| ESError::FailedToDecodeBase64X(e))?;
+        //
+        // if x.len() != expected_size {
+        //     return Err(ESError::InvalidXSize(expected_size));
+        // }
+        //
+        // let y = BASE64_URL_SAFE_NO_PAD
+        //     .decode(parameters.y)
+        //     .map_err(|e| ESError::FailedToDecodeBase64Y(e))?;
+        //
+        // if y.len() != expected_size {
+        //     return Err(ESError::InvalidYSize(expected_size));
+        // }
+        //
+        // let field_bytes = FieldBytes::<C>::try_from(d)
+        //     .map_err(|_| ESError::FailedToRepresentD)?;
+        //
+        // let signing_key = SigningKey::from_bytes(&field_bytes)
+        //     .map_err(|_| ESError::FailedToRepresentD)?;
+        //
+        // let verifying_key = signing_key.verifying_key();
+        //
+        // let sec1_point = verifying_key.to_sec1_point(false);
+        // let p_x = sec1_point.x().ok_or(ESError::MissingSec1X)?;
+        // let p_y = sec1_point.y().ok_or(ESError::MissingSec1Y)?;
+        //
+        // if p_x.as_ref() != x {
+        //     return Err(ESError::MismatchedX);
+        // }
+        //
+        // if p_y.as_ref() != y {
+        //     return Err(ESError::MismatchedY);
+        // }
+        //
+        // Ok(Self { signing_key })
+
+        todo!()
     }
 
     pub(crate) fn into_private_parameters(
@@ -113,8 +163,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::es::{ECPrivateParams, ES256Private};
     use crate::algorithm::{JwAlgSign, JwAlgVerify};
+    use crate::modules::params::ec::ECPrivateParams;
+    use crate::modules::signature::es::ES256Private;
 
     #[test]
     fn inner_from_params_works() {

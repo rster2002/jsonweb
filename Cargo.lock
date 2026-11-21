@@ -430,6 +430,7 @@ dependencies = [
  "const-oid 0.10.2",
  "digest",
  "ecdsa",
+ "elliptic-curve",
  "hmac",
  "p256",
  "p384",

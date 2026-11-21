@@ -1,6 +1,5 @@
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::modules::key::{JwkPrivateParams, JwkPublicParams, JwkType};
-use crate::modules::params::models::rsa::rsa_private_params::RSAPrivateParams;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use const_oid::AssociatedOid;
@@ -8,12 +7,9 @@ use digest::Digest;
 use rsa::BoxedUint;
 use rsa::PrivateKey;
 use std::marker::PhantomData;
-
-use crate::algorithm::rs::error::RSError;
-#[cfg(feature = "pkcs1")]
-use rsa::pkcs1::EncodeRsaPrivateKey;
-use crate::algorithm::rs::RSAPublicParams;
 use rsa::traits::{PrivateKeyParts, PublicKeyParts};
+use crate::modules::params::rsa::{RSAPrivateParams, RSAPublicParams};
+use crate::modules::signature::rs::RSError;
 
 #[derive(Debug, Clone)]
 pub struct RSPrivate<D>
@@ -279,9 +275,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::algorithm::rs::RS256Private;
     use crate::algorithm::{JwAlgSign, JwAlgVerify};
-    use crate::modules::params::models::rsa::rsa_private_params::RSAPrivateParams;
+    use crate::modules::params::rsa::RSAPrivateParams;
+    use crate::modules::signature::rs::RS256Private;
 
     fn rfc_7517_a_2_rsa_params() -> RSAPrivateParams {
         // https://www.rfc-editor.org/info/rfc7517/#appendix-A.2

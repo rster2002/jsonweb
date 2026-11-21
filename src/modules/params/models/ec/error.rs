@@ -37,4 +37,7 @@ pub enum ECParamsError {
 
     #[error("Mismatched curve: got {0}, expected {1}")]
     MismatchedCurve(String, String),
+    
+    #[error("TODO")]
+    Todo,
 }

@@ -1,6 +1,6 @@
-use crate::algorithm::hs::HSPrivate;
 use crate::algorithm::JwAlg;
 use sha2::Sha256;
+use crate::modules::signature::hs::HSPrivate;
 
 pub type HS256Private = HSPrivate<Sha256>;
 

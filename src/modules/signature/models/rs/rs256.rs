@@ -1,6 +1,5 @@
-use crate::algorithm::models::rs::rs_private::RSPrivate;
-use crate::algorithm::models::rs::rs_public::RSPublic;
 use crate::algorithm::JwAlg;
+use crate::modules::signature::rs::{RSPrivate, RSPublic};
 
 // Private
 pub type RS256Private = RSPrivate<sha2::Sha256>;

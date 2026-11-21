@@ -1,8 +1,7 @@
-use crate::algorithm::es::{ESError, ESPublic};
-use crate::algorithm::models::es::es_private::ESPrivate;
 use crate::algorithm::JwAlg;
 use crate::modules::key::{JwkPrivateParams, JwkPublicParams};
 use crate::modules::params::ec::{ECPrivateParams, ECPublicParams};
+use crate::modules::signature::es::{ESError, ESPrivate, ESPublic};
 
 // Private
 pub type ES256Private = ESPrivate<p256::NistP256>;

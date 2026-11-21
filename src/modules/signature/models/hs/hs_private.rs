@@ -1,7 +1,5 @@
-use crate::algorithm::hs::error::HSError;
 use crate::algorithm::{JwAlgSign, JwAlgVerify};
 use crate::modules::key::{JwkPrivateParams, JwkType};
-use crate::modules::params::models::oct::oct_private_params::OctPrivateParams;
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use digest::KeyInit;
@@ -10,6 +8,8 @@ use hmac::{Hmac, Mac};
 use rand::RngCore;
 use std::convert::Infallible;
 use std::fmt::{Debug, Formatter};
+use crate::modules::params::oct::OctPrivateParams;
+use crate::modules::signature::hs::error::HSError;
 
 #[derive(Clone)]
 pub struct HSPrivate<D>
@@ -124,10 +124,10 @@ where D : EagerHash,
 #[cfg(test)]
 mod tests {
     use crate::algorithm::JwAlgSign;
-    use crate::algorithm::hs::HS256Private;
     use crate::modules::algorithm::JwAlgVerify;
     use base64::Engine;
     use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+    use crate::modules::signature::hs::HS256Private;
 
     #[test]
     fn hs256_algorithm_works_as_expected() {
