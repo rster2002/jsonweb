@@ -4,9 +4,10 @@ use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use digest::typenum::Unsigned;
 use elliptic_curve::array::Array;
 use elliptic_curve::sec1::{FromSec1Point, ModulusSize, Sec1Point, ToSec1Point};
-use elliptic_curve::{AffinePoint, Curve, CurveArithmetic, FieldBytesSize, PublicKey, SecretKey};
+use elliptic_curve::{AffinePoint, Curve, CurveArithmetic, FieldBytes, FieldBytesSize, PublicKey, SecretKey};
 use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Formatter};
+use crate::modules::params::ec::ECPublicParams;
 
 #[derive(Clone, Serialize, Deserialize)]
 pub struct ECPrivateParams {
@@ -99,6 +100,44 @@ impl ECPrivateParams {
         }
 
         Ok(secret_key)
+    }
+}
+
+impl<C, S> TryFrom<(&SecretKey<C>, S)> for ECPrivateParams
+where C : Curve + CurveArithmetic,
+      AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+      FieldBytesSize<C>: ModulusSize,
+        S: Into<String>
+{
+    type Error = ECParamsError;
+
+    fn try_from((key, crv): (&SecretKey<C>, S)) -> Result<Self, Self::Error> {
+        let public_params = ECPublicParams::try_from((&key.public_key(), crv))?;
+
+        let d = key.to_bytes();
+
+        Ok(ECPrivateParams {
+            crv: public_params.crv,
+            x: public_params.x,
+            y: public_params.y,
+            d: BASE64_URL_SAFE_NO_PAD.encode(d),
+        })
+    }
+}
+
+impl<C, S> TryFrom<(&FieldBytes<C>, S)> for ECPrivateParams
+where C : Curve + CurveArithmetic,
+      AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+      FieldBytesSize<C>: ModulusSize,
+      S: Into<String>
+{
+    type Error = ECParamsError;
+
+    fn try_from((key, crv): (&FieldBytes<C>, S)) -> Result<Self, Self::Error> {
+        let private_key = SecretKey::<C>::from_bytes(key)
+            .map_err(|_| ECParamsError::Todo)?;
+
+        Ok(ECPrivateParams::try_from((&private_key, crv))?)
     }
 }
 

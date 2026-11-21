@@ -10,109 +10,107 @@ use ecdsa::elliptic_curve::{
 use ecdsa::signature::{Signer, Verifier};
 use ecdsa::{EcdsaCurve, Signature, SigningKey};
 use std::convert::Infallible;
+use elliptic_curve::sec1::ModulusSize;
+use elliptic_curve::SecretKey;
 use crate::modules::signature::es::{ESError, ESPublic};
 
 #[derive(Debug, Clone)]
 pub struct ESPrivate<C>
 where
-    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
-    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-    FieldBytesSize<C>: sec1::ModulusSize,
+    C: CurveArithmetic + EcdsaCurve + ecdsa::DigestAlgorithm,
+    // AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
+    // FieldBytesSize<C>: sec1::ModulusSize,
 {
     pub(crate) signing_key: SigningKey<C>,
 }
 
-impl<C> ESPrivate<C>
-where
-    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
-    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-    FieldBytesSize<C>: sec1::ModulusSize,
-{
-    pub(crate) fn from_private_parameters(
-        parameters: ECPrivateParams,
-        crv: &'static str,
-    ) -> Result<Self, ESError> {
-        // if crv != parameters.crv {
-        //     return Err(ESError::MismatchedCurve(parameters.crv, crv));
-        // }
-        //
-        // let expected_size = <C::FieldBytesSize as Unsigned>::USIZE;
-        //
-        // let d = BASE64_URL_SAFE_NO_PAD
-        //     .decode(parameters.d)
-        //     .map_err(|e| ESError::FailedToDecodeBase64D(e))?;
-        //
-        // if d.len() != expected_size {
-        //     return Err(ESError::InvalidDSize(expected_size));
-        // }
-        //
-        // let x = BASE64_URL_SAFE_NO_PAD
-        //     .decode(parameters.x)
-        //     .map_err(|e| ESError::FailedToDecodeBase64X(e))?;
-        //
-        // if x.len() != expected_size {
-        //     return Err(ESError::InvalidXSize(expected_size));
-        // }
-        //
-        // let y = BASE64_URL_SAFE_NO_PAD
-        //     .decode(parameters.y)
-        //     .map_err(|e| ESError::FailedToDecodeBase64Y(e))?;
-        //
-        // if y.len() != expected_size {
-        //     return Err(ESError::InvalidYSize(expected_size));
-        // }
-        //
-        // let field_bytes = FieldBytes::<C>::try_from(d)
-        //     .map_err(|_| ESError::FailedToRepresentD)?;
-        //
-        // let signing_key = SigningKey::from_bytes(&field_bytes)
-        //     .map_err(|_| ESError::FailedToRepresentD)?;
-        //
-        // let verifying_key = signing_key.verifying_key();
-        //
-        // let sec1_point = verifying_key.to_sec1_point(false);
-        // let p_x = sec1_point.x().ok_or(ESError::MissingSec1X)?;
-        // let p_y = sec1_point.y().ok_or(ESError::MissingSec1Y)?;
-        //
-        // if p_x.as_ref() != x {
-        //     return Err(ESError::MismatchedX);
-        // }
-        //
-        // if p_y.as_ref() != y {
-        //     return Err(ESError::MismatchedY);
-        // }
-        //
-        // Ok(Self { signing_key })
-
-        todo!()
-    }
-
-    pub(crate) fn into_private_parameters(
-        signing_key: &SigningKey<C>,
-        crv: impl Into<String>,
-    ) -> Result<ECPrivateParams, ESError> {
-        let public_params = ESPublic::into_public_parameters(signing_key.verifying_key(), crv)?;
-
-        // TODO check: Missing "The length of this octet string
-        //    MUST be ceiling(log-base-2(n)/8) octets (where n is the order of the
-        //    curve)."
-
-        let d = signing_key.to_bytes();
-
-        Ok(ECPrivateParams {
-            crv: public_params.crv,
-            x: public_params.x,
-            y: public_params.y,
-            d: BASE64_URL_SAFE_NO_PAD.encode(d),
-        })
-    }
-}
+// impl<C> ESPrivate<C>
+// where
+//     C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
+// {
+//     pub(crate) fn from_private_parameters(
+//         parameters: ECPrivateParams,
+//         crv: &'static str,
+//     ) -> Result<Self, ESError> {
+//         // if crv != parameters.crv {
+//         //     return Err(ESError::MismatchedCurve(parameters.crv, crv));
+//         // }
+//         //
+//         // let expected_size = <C::FieldBytesSize as Unsigned>::USIZE;
+//         //
+//         // let d = BASE64_URL_SAFE_NO_PAD
+//         //     .decode(parameters.d)
+//         //     .map_err(|e| ESError::FailedToDecodeBase64D(e))?;
+//         //
+//         // if d.len() != expected_size {
+//         //     return Err(ESError::InvalidDSize(expected_size));
+//         // }
+//         //
+//         // let x = BASE64_URL_SAFE_NO_PAD
+//         //     .decode(parameters.x)
+//         //     .map_err(|e| ESError::FailedToDecodeBase64X(e))?;
+//         //
+//         // if x.len() != expected_size {
+//         //     return Err(ESError::InvalidXSize(expected_size));
+//         // }
+//         //
+//         // let y = BASE64_URL_SAFE_NO_PAD
+//         //     .decode(parameters.y)
+//         //     .map_err(|e| ESError::FailedToDecodeBase64Y(e))?;
+//         //
+//         // if y.len() != expected_size {
+//         //     return Err(ESError::InvalidYSize(expected_size));
+//         // }
+//         //
+//         // let field_bytes = FieldBytes::<C>::try_from(d)
+//         //     .map_err(|_| ESError::FailedToRepresentD)?;
+//         //
+//         // let signing_key = SigningKey::from_bytes(&field_bytes)
+//         //     .map_err(|_| ESError::FailedToRepresentD)?;
+//         //
+//         // let verifying_key = signing_key.verifying_key();
+//         //
+//         // let sec1_point = verifying_key.to_sec1_point(false);
+//         // let p_x = sec1_point.x().ok_or(ESError::MissingSec1X)?;
+//         // let p_y = sec1_point.y().ok_or(ESError::MissingSec1Y)?;
+//         //
+//         // if p_x.as_ref() != x {
+//         //     return Err(ESError::MismatchedX);
+//         // }
+//         //
+//         // if p_y.as_ref() != y {
+//         //     return Err(ESError::MismatchedY);
+//         // }
+//         //
+//         // Ok(Self { signing_key })
+//
+//         todo!()
+//     }
+//
+//     // pub(crate) fn into_private_parameters(
+//     //     signing_key: &SigningKey<C>,
+//     //     crv: impl Into<String>,
+//     // ) -> Result<ECPrivateParams, ESError> {
+//     //     let public_params = ESPublic::into_public_parameters(signing_key.verifying_key(), crv)?;
+//     //
+//     //     // TODO check: Missing "The length of this octet string
+//     //     //    MUST be ceiling(log-base-2(n)/8) octets (where n is the order of the
+//     //     //    curve)."
+//     //
+//     //     let d = signing_key.to_bytes();
+//     //
+//     //     Ok(ECPrivateParams {
+//     //         crv: public_params.crv,
+//     //         x: public_params.x,
+//     //         y: public_params.y,
+//     //         d: BASE64_URL_SAFE_NO_PAD.encode(d),
+//     //     })
+//     // }
+// }
 
 impl<C> JwAlgVerify for ESPrivate<C>
 where
     C: CurveArithmetic + EcdsaCurve + ecdsa::DigestAlgorithm,
-    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-    FieldBytesSize<C>: sec1::ModulusSize,
 {
     type Error = ESError;
 
@@ -128,8 +126,6 @@ where
 impl<C> JwAlgSign for ESPrivate<C>
 where
     C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
-    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-    FieldBytesSize<C>: sec1::ModulusSize,
 {
     type Error = Infallible;
 
@@ -142,19 +138,24 @@ where
 impl<C> JwkType for ESPrivate<C>
 where
     C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
-    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-    FieldBytesSize<C>: sec1::ModulusSize,
 {
     fn kty() -> impl AsRef<str> {
         "EC"
     }
 }
 
+impl<C> From<SecretKey<C>> for ESPrivate<C>
+where
+    C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
+{
+    fn from(key: SecretKey<C>) -> Self {
+        ESPrivate { signing_key: SigningKey::from(key) }
+    }
+}
+
 impl<C> From<SigningKey<C>> for ESPrivate<C>
 where
     C: EcdsaCurve + CurveArithmetic + ecdsa::DigestAlgorithm,
-    AffinePoint<C>: FromSec1Point<C> + ToSec1Point<C>,
-    FieldBytesSize<C>: sec1::ModulusSize,
 {
     fn from(key: SigningKey<C>) -> Self {
         ESPrivate { signing_key: key }
@@ -169,14 +170,13 @@ mod tests {
 
     #[test]
     fn inner_from_params_works() {
-        let a = ES256Private::from_private_parameters(
+        let a = ES256Private::try_from(
             ECPrivateParams {
                 crv: "P-256".to_string(),
                 x: "Q5PISQVZ7LMwDNrjCNUcPLR45-zArUIqVazbscbLZ5Y".to_string(),
                 y: "cum17-MtTGX2X7yrI0tvp0Xl9NVEmHUuotAwyJHOv7I".to_string(),
                 d: "3XAy6ko-fegKfkV5uE5nKY4wTncjvFMYTJM0uh4rj8E".to_string(),
             },
-            "P-256",
         )
             .expect("To have been generated");
 

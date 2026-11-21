@@ -35,9 +35,9 @@ pub enum ECParamsError {
     #[error("Missing Sec1 `y`")]
     MissingSec1Y,
 
-    #[error("Mismatched curve: got {0}, expected {1}")]
-    MismatchedCurve(String, String),
-    
+    // #[error("Mismatched curve: got {0}, expected {1}")]
+    // MismatchedCurve(String, String),
+
     #[error("TODO")]
     Todo,
 }

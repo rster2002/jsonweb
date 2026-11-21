@@ -15,8 +15,12 @@ impl JwAlg for ES256Private {
 impl TryFrom<ECPrivateParams> for ES256Private {
     type Error = ESError;
 
-    fn try_from(value: ECPrivateParams) -> Result<Self, Self::Error> {
-        Self::from_private_parameters(value, "P-256")
+    fn try_from(params: ECPrivateParams) -> Result<Self, Self::Error> {
+        if params.crv != "P-256" {
+            return Err(ESError::MismatchedCurve(params.crv, "P-256".to_string()));
+        }
+
+        Ok(ESPrivate::from(params.secret_key()?))
     }
 }
 
@@ -24,7 +28,9 @@ impl TryInto<ECPrivateParams> for ES256Private {
     type Error = ESError;
 
     fn try_into(self) -> Result<ECPrivateParams, Self::Error> {
-        Self::into_private_parameters(&self.signing_key, "P-256")
+        // Ok(ECPrivateParams::from(self.signing_key))
+        
+        // Self::into_private_parameters(&self.signing_key, "P-256")
     }
 }
 

@@ -17,4 +17,7 @@ pub enum ESError {
 
     #[error("Failed to create verifying key")]
     FailedToCreateVerifyingKey,
+
+    #[error("Mismatched curve: got {0}, expected {1}")]
+    MismatchedCurve(String, String),
 }
