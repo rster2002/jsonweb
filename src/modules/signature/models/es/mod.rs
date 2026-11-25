@@ -1,3 +1,4 @@
+mod error;
 mod es_private;
 mod es_public;
 
@@ -13,4 +14,3 @@ pub use es256::*;
 
 #[cfg(feature = "es384")]
 pub mod es384;
-mod error;

@@ -22,25 +22,43 @@ bon = "3.10.3"
 const-oid = "0.10.2"
 pastey = "0.2.3"
 elliptic-curve = { version = "0.14.3", optional = true }
+flate2 = { version = "1.1.11", optional = true }
+aes-gcm = { version = "0.11.1", optional = true }
 
 [features]
-default = ["hs256"]
+default = ["jwt", "jwe"]
 pkcs1 = ["dep:pkcs1"]
 rand = ["dep:rand"]
 
-rsa = []
+# JOSE
+jws = []
+jwt = ["jws", "hs256"]
+jwe = ["rsaes-oaep", "deflate", "dep:rand"]
+
+# Families
+rsa = ["dep:rsa"]
 ec = ["dep:elliptic-curve"]
 
+# JWS
 hmac = ["hs256", "hs384", "hs512"]
 hs256 = ["dep:hmac", "dep:sha2"]
 hs384 = ["dep:hmac", "dep:sha2"]
 hs512 = ["dep:hmac", "dep:sha2"]
 
 rsassa-pkcs1-v1_5 = ["rs256", "rs384", "rs512"]
-rs256 = ["rsa", "dep:rsa", "dep:sha2"]
-rs384 = ["rsa", "dep:rsa", "dep:sha2"]
-rs512 = ["rsa", "dep:rsa", "dep:sha2"]
+rs256 = ["rsa", "dep:sha2"]
+rs384 = ["rsa", "dep:sha2"]
+rs512 = ["rsa", "dep:sha2"]
 
 ecdsa = ["es256", "es384"]
 es256 = ["ec", "dep:p256"]
 es384 = ["ec", "dep:p384"]
+
+# JWE algorithms
+rsaes-oaep = ["rsa"]
+
+# JWE encodings
+a256gcm = ["dep:aes-gcm"]
+
+# JWE compression
+deflate = ["dep:flate2"]

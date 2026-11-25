@@ -3,6 +3,7 @@ use bon::Builder;
 use serde::{Deserialize, Serialize};
 use crate::algorithm::JwAlg;
 
+// TODO decide whether this should be separated for the different shapes.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, Builder)]
 pub struct JoseHeader {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -13,6 +14,12 @@ pub struct JoseHeader {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub alg: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enc: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub zip: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub jku: Option<String>,
@@ -45,6 +52,8 @@ impl JoseHeader {
     pub fn or(self, other: JoseHeader) -> JoseHeader {
         JoseHeader {
             alg: self.alg.or(other.alg),
+            enc: self.enc.or(other.enc),
+            zip: self.zip.or(other.zip),
             jku: self.jku.or(other.jku),
             jwk: self.jwk.or(other.jwk),
             kid: self.kid.or(other.kid),
