@@ -1,5 +1,4 @@
-use crate::modules::params::ec::ECPublicParams;
-use crate::modules::params::ec::error::ECParamsError;
+use crate::modules::params::ec::{ECParamsError, ECPublicParams};
 use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use digest::typenum::Unsigned;

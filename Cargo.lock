@@ -523,6 +523,7 @@ dependencies = [
 name = "jsonweb"
 version = "1.0.1"
 dependencies = [
+ "aes",
  "aes-gcm",
  "base64",
  "bon",

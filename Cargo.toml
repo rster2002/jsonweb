@@ -24,6 +24,7 @@ pastey = "0.2.3"
 elliptic-curve = { version = "0.14.3", optional = true }
 flate2 = { version = "1.1.11", optional = true }
 aes-gcm = { version = "0.11.1", optional = true }
+aes = { version = "0.9.4", optional = true }
 
 [features]
 default = ["jwt", "jwe"]
@@ -58,7 +59,7 @@ es384 = ["ec", "dep:p384"]
 rsaes-oaep = ["rsa"]
 
 # JWE encodings
-a256gcm = ["dep:aes-gcm"]
+a256gcm = ["dep:aes-gcm", "dep:aes"]
 
 # JWE compression
 deflate = ["dep:flate2"]
